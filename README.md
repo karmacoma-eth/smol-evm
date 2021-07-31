@@ -15,7 +15,7 @@ For instance, let's say that you have some Yul code, that when compiled with `so
 
 You can now deploy this code:
 
-```
+```javascript
 web3.eth.sendTransaction({
     from: /* your address */, 
     /* no to address as we are creating a contract */ 
@@ -29,20 +29,21 @@ Wait for the transaction to be confirmed, and go look at the code of the contrac
 ## create2.py
 Based on web3.py, this script can find addresses of contracts deployed by the `CREATE2` opcode that satisfy a particular predicate.
 
-```
-Usage: python3 create2.py deployer_addr <salt | predicate> bytecode
+Usage: `python3 create2.py deployer_addr <salt | predicate> bytecode`
 
 When passing a salt value, this script prints the address of the newly deployed contract based on the deployer address and bytecode hash.
-Example: python3 create2.py Bf6cE3350513EfDcC0d5bd5413F1dE53D0E4f9aE 42 602a60205260206020f3
+
+Example: `python3 create2.py Bf6cE3350513EfDcC0d5bd5413F1dE53D0E4f9aE 42 602a60205260206020f3`
 
 When passing a predicate, this script will search for a salt value such that the new address satisfies the predicate.
-Example: python3 create2.py Bf6cE3350513EfDcC0d5bd5413F1dE53D0E4f9aE 'lambda addr: "badc0de" in addr.lower()' 602a60205260206020f3
-Another predicate that may be useful: 'lambda addr: addr.startswith("0" * 8)' 602a60205260206020f3
-```
+
+Example: `python3 create2.py Bf6cE3350513EfDcC0d5bd5413F1dE53D0E4f9aE 'lambda addr: "badc0de" in addr.lower()' 602a60205260206020f3`
+
+Another predicate that may be useful: `'lambda addr: addr.startswith("0" * 8)' 602a60205260206020f3`
 
 Use with a deployer contract like this:
 
-```
+```solidity
 contract Deployer {    
     function deploy(bytes memory code, uint256 salt) public returns(address) {
         address addr;
