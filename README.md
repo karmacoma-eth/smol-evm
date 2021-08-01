@@ -39,7 +39,7 @@ When passing a predicate, this script will search for a salt value such that the
 
 Example: `python3 create2.py Bf6cE3350513EfDcC0d5bd5413F1dE53D0E4f9aE 'lambda addr: "badc0de" in addr.lower()' 602a60205260206020f3`
 
-Another predicate that may be useful: `'lambda addr: addr.startswith("0" * 8)' 602a60205260206020f3`
+Another predicate that may be useful: `'lambda addr: addr.startswith("0" * 8)'`
 
 Use with a deployer contract like this:
 
