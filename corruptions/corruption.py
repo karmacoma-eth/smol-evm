@@ -34,6 +34,16 @@ borders_and_corruptors = [
     ":",
 ]
 
+checkers = [
+    "|",
+    "-",
+    "=",
+    "+",
+    "\\",
+    ":",
+    "~"
+]
+
 bgcolors = [
     "#022FB7",
     "#262A36",
@@ -71,6 +81,8 @@ class Corruption:
     '#B70284'
     >>> token_0.get_secret_phrase()
     'EVERYWHERE'
+    >>> token_0.get_checker()
+    '='
     """
 
     def __init__(self, tokenId):
@@ -103,6 +115,10 @@ class Corruption:
         hash = Web3.solidityKeccak(['string', 'uint256'], ["FGCOLOR", self.tokenId])
         return phrases[len(phrases) - 6 + Web3.toInt(hash) % 6]
 
+    def get_checker(self):
+        hash = Web3.solidityKeccak(['string', 'uint256'], ["CHECKER", self.tokenId])
+        return checkers[Web3.toInt(hash) % 7]
+
     def get_orders(self):
         url = "https://api.opensea.io/wyvern/v1/orders?bundled=false&include_bundled=false&include_invalid=false&limit=20&offset=0&order_by=created_date&order_direction=desc"
 
@@ -115,7 +131,7 @@ class Corruption:
 
 
     def __str__(self):
-        return f"{self.get_token_id()}\t{self.get_phrase()}\t{self.get_secret_phrase()}\t{self.get_border()}\t{self.get_corruptor()}\t{self.get_bgcolor()}\t{self.get_num_iterations()}"
+        return f"{self.get_token_id()}\t{self.get_phrase()}\t{self.get_secret_phrase()}\t{self.get_border()}\t{self.get_corruptor()}\t{self.get_checker()}\t{self.get_bgcolor()}\t{self.get_num_iterations()}"
 
 
 # all the tokens:
@@ -174,14 +190,41 @@ def get_tokens_with_same_phrase_and_secret_phrase():
         print(token_id, '\t', phrase)
 
 
-def get_perfect_corruptions():
-    perfects = [x for x in corruptions if x.get_phrase() == x.get_secret_phrase() and x.get_corruptor() == x.get_border()]
-    for perfect_token in perfects:
-        print(perfect_token)
+def get_triple_perfect_corruptions():
+    return [x for x in corruptions if x.get_phrase() == x.get_secret_phrase() and x.get_corruptor() == x.get_border() and x.get_corruptor() == x.get_checker()]
+
+
+def get_corruptor_and_checker_perfects():
+    return [x for x in corruptions if x.get_phrase() == x.get_secret_phrase() and x.get_corruptor() == x.get_checker()]
+
+
+
+def print_collection(some_corruptions):
+    for c in some_corruptions:
+        print(c)
+
+
+def fetch_prices(some_corruptions):
+    for perfect_token in some_corruptions:
+        print(f'fetching sell orders for token_id {perfect_token.get_token_id()}...\t', end='')
+        orders = perfect_token.get_orders()['orders']
+
+        # {'count': 1, 'orders': []}
+        if len(orders) > 0:
+            order = orders[0]
+            price = float(order['current_price']) / 10 ** int(order['payment_token_contract']['decimals'])
+            print(f"{price} {order['payment_token_contract']['symbol']}")
+
+        else:
+            print ('not for sale')
+
+        sleep(1)
 
 
 if __name__ == "__main__":
     import doctest
     doctest.testmod()
 
-    get_perfect_corruptions()
+    collection = get_corruptor_and_checker_perfects()
+    print_collection(collection)
+    fetch_prices(collection)
