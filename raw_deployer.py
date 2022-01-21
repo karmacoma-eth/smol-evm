@@ -1,6 +1,7 @@
+#!/usr/bin/env python3
+
 import string
 import sys
-
 
 def bin2(value):
     return binN(value, 2)
