@@ -52,7 +52,7 @@ def main():
     assert all([x in string.hexdigits for x in runtime_bin])
 
     # in bytes
-    runtime_bin_length = len(runtime_bin) / 2
+    runtime_bin_length = len(runtime_bin) // 2
 
     # PUSH2 ought to be enough for anybody
     push_length = PUSH1(runtime_bin_length) if runtime_bin_length <= 0xff else PUSH2(runtime_bin_length)
@@ -72,7 +72,7 @@ def main():
     ])
 
     # since runtime_bin will come right after the init code, runtime_bin_offset is just the init code length
-    initcode_length = len(initcode.to_bin()) / 2
+    initcode_length = len(initcode.to_bin()) // 2
     push_offset.arg = initcode_length
 
     print(initcode.to_bin() + runtime_bin)
