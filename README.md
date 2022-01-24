@@ -2,6 +2,19 @@
 
 A random collection of hacky scripts related to EVM development and challenges.
 
+# Installation
+
+> Install Poetry
+
+```bash
+curl -sSL https://install.python-poetry.org | python3 -
+```
+
+
+
+
+# Random scripts
+
 ## raw_deployer.py
 
 Takes the binary representation of a contract and generates the init code that will deploy that contract (Ti in Yellow Paper terminology).
