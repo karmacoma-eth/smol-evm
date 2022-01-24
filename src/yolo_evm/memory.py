@@ -7,7 +7,7 @@ class Memory:
         if offset < 0:
             raise Exception("Invalid memory offset " + str(offset))
 
-        if value < 0 or value > 2**8:
+        if value < 0 or value > 2 ** 8:
             raise Exception("Invalid memory value " + str(value))
 
         # expand memory if needed

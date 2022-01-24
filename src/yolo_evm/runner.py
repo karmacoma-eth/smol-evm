@@ -1,6 +1,7 @@
 from .context import ExecutionContext
 
-def run(code: bytes, context = ExecutionContext()) -> None:
+
+def run(code: bytes, context=ExecutionContext()) -> None:
     """
     Execute the code in the given context.
     """

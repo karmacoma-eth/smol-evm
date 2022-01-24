@@ -10,7 +10,11 @@ A random collection of hacky scripts related to EVM development and challenges.
 curl -sSL https://install.python-poetry.org | python3 -
 ```
 
+> Run Tests
 
+```bash
+poetry run pytest -v
+```
 
 
 # Random scripts
