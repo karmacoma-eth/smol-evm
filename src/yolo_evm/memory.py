@@ -5,10 +5,10 @@ class Memory:
 
     def store(self, offset: int, value: int) -> None:
         if offset < 0:
-            raise Exception("Invalid memory offset " + str(offset))
+            raise InvalidMemoryAccess({"offset": offset, "value": value})
 
         if value < 0 or value > 2 ** 8:
-            raise Exception("Invalid memory value " + str(value))
+            raise InvalidMemoryValue({"offset": offset, "value": value})
 
         # expand memory if needed
         if offset >= len(self.memory):
@@ -18,7 +18,7 @@ class Memory:
 
     def load(self, offset: int) -> int:
         if offset < 0:
-            raise Exception("Invalid memory offset " + str(offset))
+            raise InvalidMemoryAccess({"offset": offset})
 
         if offset >= len(self.memory):
             return 0
@@ -30,3 +30,11 @@ class Memory:
 
     def __repr__(self) -> str:
         return str(self)
+
+
+class InvalidMemoryAccess(Exception):
+    ...
+
+
+class InvalidMemoryValue(Exception):
+    ...

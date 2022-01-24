@@ -5,7 +5,7 @@ class Stack:
 
     def push(self, item: int) -> None:
         if item < 0 or item > 2 ** 256:
-            raise InvalidStackItem({'item': item})
+            raise InvalidStackItem({"item": item})
 
         if (len(self.stack) + 1) > self.max_depth:
             raise StackOverflow()

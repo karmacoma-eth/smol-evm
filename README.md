@@ -16,6 +16,11 @@ curl -sSL https://install.python-poetry.org | python3 -
 poetry run pytest -v
 ```
 
+> Run the `black` code formatter
+
+```bash
+poetry run black src
+```
 
 # Random scripts
 
