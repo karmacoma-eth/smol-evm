@@ -9,9 +9,12 @@ def run(code: bytes) -> None:
     context = ExecutionContext(code=code)
 
     while not context.stopped:
+        pc_before = context.pc
         instruction = decode_opcode(context)
         instruction.execute(context)
 
-        print(f"{instruction} @ pc={context.pc}")
+        print(f"{instruction} @ pc={pc_before}")
         print(context)
         print()
+
+    print(f'Output: 0x{context.returndata.hex()}')

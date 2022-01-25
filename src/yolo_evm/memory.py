@@ -27,6 +27,13 @@ class Memory:
 
         return self.memory[offset]
 
+    def load_range(self, offset: int, length: int) -> bytes:
+        if offset < 0:
+            raise InvalidMemoryAccess({"offset": offset, "length": length})
+
+        # we could use a slice here, but this lets us gets 0 bytes if we read past the end of concrete memory
+        return bytes(self.load(x) for x in range(offset, offset + length))
+
     def __str__(self) -> str:
         return str(self.memory)
 

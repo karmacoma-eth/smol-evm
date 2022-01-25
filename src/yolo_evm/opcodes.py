@@ -56,7 +56,16 @@ MUL = register_instruction(
     "MUL",
     (lambda ctx: ctx.stack.push(ctx.stack.pop() * ctx.stack.pop())),
 )
-
+MSTORE8 = register_instruction(
+    0x53,
+    "MSTORE8",
+    (lambda ctx: ctx.memory.store(ctx.stack.pop(), ctx.stack.pop() % 256)),
+)
+RETURN = register_instruction(
+    0xf3,
+    "RETURN",
+    (lambda ctx: ctx.set_return_data(ctx.stack.pop(), ctx.stack.pop())),
+)
 
 def decode_opcode(context: ExecutionContext) -> Instruction:
     if context.pc < 0:

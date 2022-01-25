@@ -9,6 +9,11 @@ class ExecutionContext:
         self.memory = memory
         self.pc = pc
         self.stopped = False
+        self.returndata = bytes()
+
+    def set_return_data(self, offset: int, length: int) -> None:
+        self.stopped = True
+        self.returndata = self.memory.load_range(offset, length)
 
     def stop(self) -> None:
         self.stopped = True
