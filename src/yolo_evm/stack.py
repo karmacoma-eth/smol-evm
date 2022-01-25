@@ -1,6 +1,7 @@
 from sre_constants import MAX_REPEAT
 from .constants import MAX_STACK_DEPTH, MAX_UINT256
 
+
 class Stack:
     def __init__(self, max_depth=MAX_STACK_DEPTH) -> None:
         self.stack = []

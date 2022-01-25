@@ -1,5 +1,6 @@
 from .constants import MAX_UINT256, MAX_UINT8
 
+
 class Memory:
     def __init__(self) -> None:
         # TODO: use https://docs.python.org/3/library/functions.html#func-bytearray

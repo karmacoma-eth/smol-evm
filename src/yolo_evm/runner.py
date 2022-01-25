@@ -17,4 +17,4 @@ def run(code: bytes) -> None:
         print(context)
         print()
 
-    print(f'Output: 0x{context.returndata.hex()}')
+    print(f"Output: 0x{context.returndata.hex()}")

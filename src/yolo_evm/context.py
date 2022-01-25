@@ -22,7 +22,9 @@ class ExecutionContext:
         """
         Returns the next num_bytes from the code buffer (at index pc) as an integer and advances pc by num_bytes.
         """
-        value = int.from_bytes(self.code[self.pc : self.pc + num_bytes], byteorder="big")
+        value = int.from_bytes(
+            self.code[self.pc : self.pc + num_bytes], byteorder="big"
+        )
         self.pc += num_bytes
         return value
 
