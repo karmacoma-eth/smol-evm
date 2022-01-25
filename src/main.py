@@ -11,12 +11,7 @@ def main():
         sys.exit(1)
 
     data = sys.argv[1]
-
-    as_bytes = bytes(
-        [int(data[2 * i : 2 * (i + 1)], 16) for i in range(0, len(data) // 2)]
-    )
-
-    run(as_bytes)
+    run(bytes.fromhex(data))
 
 
 if __name__ == "__main__":

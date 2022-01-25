@@ -44,7 +44,7 @@ STOP = register_instruction(0x00, "STOP", (lambda ctx: ctx.stop()))
 PUSH1 = register_instruction(
     0x60,
     "PUSH1",
-    (lambda ctx: ctx.stack.push(ctx.read_next_bytes(1))),
+    (lambda ctx: ctx.stack.push(ctx.read_code(1))),
 )
 ADD = register_instruction(
     0x01,
@@ -59,10 +59,14 @@ MUL = register_instruction(
 
 
 def decode_opcode(context: ExecutionContext) -> Instruction:
-    if context.pc < 0 or context.pc >= len(context.code):
-        raise InvalidCodeOffset({"code": context.code, "pc": context.pc})
+    if context.pc < 0:
+        raise InvalidCodeOffset({"code": context.code.hex(), "pc": context.pc})
 
-    opcode = context.read_next_bytes(1)
+    # section 9.4.1 of the yellow paper, if pc is outside code, then the operation to be executed is STOP
+    if context.pc >= len(context.code):
+        return STOP
+
+    opcode = context.read_code(1)
     instruction = INSTRUCTIONS_BY_OPCODE.get(opcode)
     if instruction is None:
         raise UnknownOpcode({"opcode": opcode})
