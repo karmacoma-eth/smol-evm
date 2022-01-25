@@ -1,0 +1,13 @@
+# mul-return.easm
+PUSH 0x6
+PUSH 0x7
+MUL
+
+# we have 42 on the stack, store it in mem[0]
+PUSH 0x0
+MSTORE8
+
+# return mem[0:0]
+PUSH 0x1
+PUSH 0x0
+RETURN

@@ -1,0 +1,4 @@
+PUSH 0x6
+PUSH 0x7
+MUL
+STOP
