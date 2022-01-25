@@ -33,5 +33,5 @@ def test_invalid_value_negative(memory):
 
 def test_invalid_value_too_big(memory):
     with pytest.raises(InvalidMemoryValue) as excinfo:
-        memory.store(1, 1 << 257)
-    assert excinfo.value.args[0]['value'] == 1 << 257
+        memory.store(1, 0x100)
+    assert excinfo.value.args[0]['value'] == 0x100

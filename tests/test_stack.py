@@ -1,3 +1,4 @@
+from yolo_evm.constants import MAX_UINT256
 from yolo_evm.stack import Stack, StackOverflow, StackUnderflow, InvalidStackItem
 
 import pytest
@@ -25,8 +26,8 @@ def test_push_pop(stack):
 
 
 def test_push_uint256_max(stack):
-    stack.push(2 ** 256 - 1)
-    assert stack.pop() == 2 ** 256 - 1
+    stack.push(MAX_UINT256)
+    assert stack.pop() == MAX_UINT256
 
 
 def test_invalid_value_negative(stack):
@@ -37,5 +38,5 @@ def test_invalid_value_negative(stack):
 
 def test_invalid_value_too_big(stack):
     with pytest.raises(InvalidStackItem) as excinfo:
-        stack.push(1 << 257)
-    assert excinfo.value.args[0]['item'] == 1 << 257
+        stack.push(MAX_UINT256 + 1)
+    assert excinfo.value.args[0]['item'] == MAX_UINT256 + 1

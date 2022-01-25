@@ -6,7 +6,6 @@ def run(code: bytes) -> None:
     """
     Executes the code in a fresh context.
     """
-
     context = ExecutionContext(code=code)
 
     while not context.stopped:
@@ -14,6 +13,6 @@ def run(code: bytes) -> None:
 
         instruction.execute(context)
 
-        print(f'{instruction} @ pc={context.pc}')
+        print(f"{instruction} @ pc={context.pc}")
         print(context)
         print()

@@ -1,10 +1,13 @@
+from sre_constants import MAX_REPEAT
+from .constants import MAX_STACK_DEPTH, MAX_UINT256
+
 class Stack:
-    def __init__(self, max_depth=1024) -> None:
+    def __init__(self, max_depth=MAX_STACK_DEPTH) -> None:
         self.stack = []
         self.max_depth = max_depth
 
     def push(self, item: int) -> None:
-        if item < 0 or item > 2 ** 256:
+        if item < 0 or item > MAX_UINT256:
             raise InvalidStackItem({"item": item})
 
         if (len(self.stack) + 1) > self.max_depth:

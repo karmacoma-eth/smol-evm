@@ -1,13 +1,15 @@
+from .constants import MAX_UINT256, MAX_UINT8
+
 class Memory:
     def __init__(self) -> None:
         # TODO: use https://docs.python.org/3/library/functions.html#func-bytearray
         self.memory = []
 
     def store(self, offset: int, value: int) -> None:
-        if offset < 0:
+        if offset < 0 or offset > MAX_UINT256:
             raise InvalidMemoryAccess({"offset": offset, "value": value})
 
-        if value < 0 or value > 2 ** 8:
+        if value < 0 or value > MAX_UINT8:
             raise InvalidMemoryValue({"offset": offset, "value": value})
 
         # expand memory if needed
