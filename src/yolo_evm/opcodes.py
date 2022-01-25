@@ -22,6 +22,10 @@ class UnknownOpcode(Exception):
     ...
 
 
+class DuplicateOpcode(Exception):
+    ...
+    
+
 class InvalidCodeOffset(Exception):
     ...
 
@@ -35,7 +39,8 @@ def register_instruction(opcode: int, name: str, execute_func: callable):
     instruction.execute = execute_func
     INSTRUCTIONS.append(instruction)
 
-    assert opcode not in INSTRUCTIONS_BY_OPCODE
+    if opcode in INSTRUCTIONS_BY_OPCODE:
+        raise DuplicateOpcode({"opcode": opcode})
     INSTRUCTIONS_BY_OPCODE[opcode] = instruction
 
     return instruction
