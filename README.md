@@ -25,7 +25,8 @@ poetry run black src
 ```
 
 Write-up with examples:
-https://karmacoma.notion.site/Building-an-EVM-from-scratch-part-1-c28ebb4200c94f6fb75948a5feffc686
+[Building an EVM from scratch (part 1)](https://karmacoma.notion.site/Building-an-EVM-from-scratch-part-1-c28ebb4200c94f6fb75948a5feffc686) [karmacoma.notion.so]
+
 
 
 # Random scripts
