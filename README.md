@@ -4,6 +4,8 @@ A random collection of hacky scripts related to EVM development and challenges.
 
 # Installation
 
+To run the EVM from scratch:
+
 > Install Poetry
 
 ```bash
@@ -21,6 +23,10 @@ poetry run pytest -v
 ```bash
 poetry run black src
 ```
+
+Write-up with examples:
+https://karmacoma.notion.site/Building-an-EVM-from-scratch-part-1-c28ebb4200c94f6fb75948a5feffc686
+
 
 # Random scripts
 
@@ -80,10 +86,3 @@ contract Deployer {
     }
 }
 ```
-
-### Deployer addresses
-
-- Goerli: `0x986D6f3137d22FE771308E383ef63af9B4Af2CCE`
-- Ropsten: `0x9c5408C256E04432a75Ea7e8EC7918DA8E578222`
-- Kovan: `0x44817A86dF91Decf2c8164e357ad6bF069EeC77D`
-- Rinkeby: `0x44817A86dF91Decf2c8164e357ad6bF069EeC77D`
