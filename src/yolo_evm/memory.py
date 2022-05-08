@@ -15,7 +15,7 @@ class Memory:
 
         # expand memory if needed
         if offset >= len(self.memory):
-            self.memory.extend([0] * (offset - len(self.memory) + 1))
+            self.memory.extend([0] * (32 - (offset % 32)))
 
         self.memory[offset] = value
 
