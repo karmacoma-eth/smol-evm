@@ -20,10 +20,10 @@ def compute_jumpdests(code: bytes) -> set[int]:
 
 
 class ExecutionContext:
-    def __init__(self, code=bytes(), pc=0, stack=Stack(), memory=Memory()) -> None:
+    def __init__(self, code=bytes(), pc=0, stack=None, memory=None) -> None:
         self.code = code
-        self.stack = stack
-        self.memory = memory
+        self.stack = stack if stack else Stack()
+        self.memory = memory if memory else Memory()
         self.pc = pc
         self.stopped = False
         self.returndata = bytes()

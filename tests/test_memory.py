@@ -79,15 +79,30 @@ def test_invalid_value_too_big(memory):
         memory.store(1, 0x100)
     assert excinfo.value.args[0]['value'] == 0x100
 
+def test_msize_initially_zero():
+    # 5960005360016000f3
+    code = assemble(
+    [               # stack     | memory    | note
+        MSIZE,      # 0         |           | memory size in bytes (0 active words)
+        PUSH1, 0,   # 0, 0      |           | mem offset
+        MSTORE8,    #           | 0         | store memory size
+        PUSH1, 1,   # 1         | 0         | mem length
+        PUSH1, 0,   # 0, 1      | 0         | mem offset
+        RETURN      #           | 0         | return mem[0] = 0
+    ])
+
+    ret = run(code, verbose=True)
+    assert int.from_bytes(ret, 'big') == 0
+
 def test_msize_incremented_on_mload():
     # 6010515960005360016000f3
-    code = assemble([
-                    # stack     | memory    | note
+    code = assemble(
+    [               # stack     | memory    | note
         PUSH1, 16,  # 16        |           | mem offset
-        MLOAD,      # 0         | 0         | straddles the first and second words (-> active words = 2)
+        MLOAD,      # 0         | 0         | straddles the first and second words (2 active words)
         MSIZE,      # 64, 0     | 0         | memory size in bytes
         PUSH1, 0,   # 0, 64, 0  | 0         | mem offset
-        MSTORE8,    # 0         | 64
+        MSTORE8,    # 0         | 64        | store memory size
         PUSH1, 1,   # 1, 0      | 64        | mem length
         PUSH1, 0,   # 0, 1, 0   | 64        | mem offset
         RETURN      # 0         | 64        | return mem[0] = 64
