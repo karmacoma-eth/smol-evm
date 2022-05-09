@@ -6,6 +6,9 @@ import pytest
 def memory() -> Memory:
     return Memory()
 
+def store0(memory, offset):
+    memory.store(offset, 0)
+
 def test_invalid_offset(memory):
     with pytest.raises(InvalidMemoryAccess) as excinfo:
         memory.store(-1, 1)
@@ -17,6 +20,44 @@ def test_store_far_offset(memory):
     for i in range(0, 100):
         assert memory.load(i) == 0
     assert memory.load(100) == 42
+
+
+def test_memory_increments_by_word():
+    for op in [store0, Memory.load]:
+        memory = Memory()
+
+        # all fit in the same word
+        op(memory, 0)
+        assert len(memory) == 32
+        assert memory.active_words() == 1
+
+        op(memory, 1)
+        assert memory.active_words() == 1
+
+        op(memory, 31)
+        assert memory.active_words() == 1
+
+        # activate a second word
+        op(memory, 32)
+        assert memory.active_words() == 2
+
+        # go far
+        op(memory, 100)
+        assert memory.active_words() == 4
+
+
+def test_load_range_increments_by_word(memory):
+    # when we only read the first word, there is no expansion beyond that
+    memory.load_range(0, 32)
+    assert memory.active_words() == 1
+
+    # when we read across two words, then we expand
+    memory.load_range(1, 32)
+    assert memory.active_words() == 2
+
+    # when we read much further, we expand by multiple words
+    memory.load_range(68, 32)
+    assert memory.active_words() == 4
 
 
 def test_store_max(memory):
