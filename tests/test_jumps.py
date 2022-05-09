@@ -1,5 +1,4 @@
 from yolo_evm.context import ExecutionContext
-from yolo_evm.context import compute_jumpdests
 from yolo_evm.exceptions import InvalidJumpDestination
 from yolo_evm.opcodes import assemble, JUMP, JUMPI, PC, PUSH1, STOP, JUMPDEST, RETURN, MSTORE8
 from yolo_evm.runner import run, ExecutionLimitReached

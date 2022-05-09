@@ -78,6 +78,16 @@ MUL = instruction(
     "MUL",
     (lambda ctx: ctx.stack.push((ctx.stack.pop() * ctx.stack.pop()) % 2 ** 256)),
 )
+MLOAD = instruction(
+    0x51,
+    "MLOAD",
+    (lambda ctx: ctx.stack.push(ctx.memory.load_word(ctx.stack.pop()))),
+)
+MSIZE = instruction(
+    0x59,
+    "MSIZE",
+    (lambda ctx: ctx.stack.push(32 * ctx.memory.active_words())),
+)
 MSTORE8 = instruction(
     0x53,
     "MSTORE8",

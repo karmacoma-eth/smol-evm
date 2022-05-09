@@ -29,6 +29,9 @@ class Memory:
         self._expand_if_needed(offset)
         return self.memory[offset]
 
+    def load_word(self, offset: int) -> int:
+        return int.from_bytes(self.load_range(offset, 32), "big")
+
     def load_range(self, offset: int, length: int) -> bytes:
         if offset < 0:
             raise InvalidMemoryAccess({"offset": offset, "length": length})

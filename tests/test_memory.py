@@ -1,4 +1,6 @@
+from yolo_evm.opcodes import assemble, PUSH1, RETURN, MLOAD, MSTORE8, MSIZE
 from yolo_evm.memory import Memory, InvalidMemoryAccess, InvalidMemoryValue
+from yolo_evm.runner import run
 
 import pytest
 
@@ -76,3 +78,20 @@ def test_invalid_value_too_big(memory):
     with pytest.raises(InvalidMemoryValue) as excinfo:
         memory.store(1, 0x100)
     assert excinfo.value.args[0]['value'] == 0x100
+
+def test_msize_incremented_on_mload():
+    # 6010515960005360016000f3
+    code = assemble([
+                    # stack     | memory    | note
+        PUSH1, 16,  # 16        |           | mem offset
+        MLOAD,      # 0         | 0         | straddles the first and second words (-> active words = 2)
+        MSIZE,      # 64, 0     | 0         | memory size in bytes
+        PUSH1, 0,   # 0, 64, 0  | 0         | mem offset
+        MSTORE8,    # 0         | 64
+        PUSH1, 1,   # 1, 0      | 64        | mem length
+        PUSH1, 0,   # 0, 1, 0   | 64        | mem offset
+        RETURN      # 0         | 64        | return mem[0] = 64
+    ])
+
+    ret = run(code)
+    assert int.from_bytes(ret, 'big') == 64
