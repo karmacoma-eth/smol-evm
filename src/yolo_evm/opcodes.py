@@ -24,7 +24,7 @@ class Instruction:
 
 class DuplicateOpcode(Exception):
     ...
-    
+
 
 INSTRUCTIONS = []
 INSTRUCTIONS_BY_OPCODE = {}
