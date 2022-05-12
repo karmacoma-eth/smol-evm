@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 from typing import Sequence, Union
 
-from .constants import MAX_UINT256
 from .context import ExecutionContext
 from .exceptions import InvalidCodeOffset, UnknownOpcode, InvalidJumpDestination
 
@@ -28,7 +27,6 @@ class DuplicateOpcode(Exception):
 
 INSTRUCTIONS = []
 INSTRUCTIONS_BY_OPCODE = {}
-PUSH_OPCODES = set()
 
 
 def instruction(opcode: int, name: str, execute_func: callable):
@@ -39,9 +37,6 @@ def instruction(opcode: int, name: str, execute_func: callable):
     if opcode in INSTRUCTIONS_BY_OPCODE:
         raise DuplicateOpcode({"opcode": opcode})
     INSTRUCTIONS_BY_OPCODE[opcode] = instruction
-
-    if name.startswith("PUSH"):
-        PUSH_OPCODES.add(opcode)
 
     return instruction
 
@@ -63,11 +58,6 @@ def execute_JUMPI(ctx: ExecutionContext) -> None:
 
 
 STOP = instruction(0x00, "STOP", (lambda ctx: ctx.stop()))
-PUSH1 = instruction(
-    0x60,
-    "PUSH1",
-    (lambda ctx: ctx.stack.push(ctx.read_code(1))),
-)
 ADD = instruction(
     0x01,
     "ADD",
@@ -82,11 +72,6 @@ MLOAD = instruction(
     0x51,
     "MLOAD",
     (lambda ctx: ctx.stack.push(ctx.memory.load_word(ctx.stack.pop()))),
-)
-MSIZE = instruction(
-    0x59,
-    "MSIZE",
-    (lambda ctx: ctx.stack.push(32 * ctx.memory.active_words())),
 )
 MSTORE8 = instruction(
     0x53,
@@ -113,12 +98,49 @@ PC = instruction(
     "PC",
     (lambda ctx: ctx.stack.push(ctx.pc)),
 )
+MSIZE = instruction(
+    0x59,
+    "MSIZE",
+    (lambda ctx: ctx.stack.push(32 * ctx.memory.active_words())),
+)
 JUMPDEST = instruction(
     0x5B,
     "JUMPDEST",
     # This operation has no effect on machine state during execution.
     (lambda ctx: ctx),
 )
+PUSH1 = instruction(0x60, "PUSH1", lambda ctx: ctx.stack.push(ctx.read_code(1)))
+PUSH2 = instruction(0x61, "PUSH2", lambda ctx: ctx.stack.push(ctx.read_code(2)))
+PUSH3 = instruction(0x62, "PUSH3", lambda ctx: ctx.stack.push(ctx.read_code(3)))
+PUSH4 = instruction(0x63, "PUSH4", lambda ctx: ctx.stack.push(ctx.read_code(4)))
+PUSH5 = instruction(0x64, "PUSH5", lambda ctx: ctx.stack.push(ctx.read_code(5)))
+PUSH6 = instruction(0x65, "PUSH6", lambda ctx: ctx.stack.push(ctx.read_code(6)))
+PUSH7 = instruction(0x66, "PUSH7", lambda ctx: ctx.stack.push(ctx.read_code(7)))
+PUSH8 = instruction(0x67, "PUSH8", lambda ctx: ctx.stack.push(ctx.read_code(8)))
+PUSH9 = instruction(0x68, "PUSH9", lambda ctx: ctx.stack.push(ctx.read_code(9)))
+PUSH10 = instruction(0x69, "PUSH10", lambda ctx: ctx.stack.push(ctx.read_code(10)))
+PUSH11 = instruction(0x6A, "PUSH11", lambda ctx: ctx.stack.push(ctx.read_code(11)))
+PUSH12 = instruction(0x6B, "PUSH12", lambda ctx: ctx.stack.push(ctx.read_code(12)))
+PUSH13 = instruction(0x6C, "PUSH13", lambda ctx: ctx.stack.push(ctx.read_code(13)))
+PUSH14 = instruction(0x6D, "PUSH14", lambda ctx: ctx.stack.push(ctx.read_code(14)))
+PUSH15 = instruction(0x6E, "PUSH15", lambda ctx: ctx.stack.push(ctx.read_code(15)))
+PUSH16 = instruction(0x6F, "PUSH16", lambda ctx: ctx.stack.push(ctx.read_code(16)))
+PUSH17 = instruction(0x70, "PUSH17", lambda ctx: ctx.stack.push(ctx.read_code(17)))
+PUSH18 = instruction(0x71, "PUSH18", lambda ctx: ctx.stack.push(ctx.read_code(18)))
+PUSH19 = instruction(0x72, "PUSH19", lambda ctx: ctx.stack.push(ctx.read_code(19)))
+PUSH20 = instruction(0x73, "PUSH20", lambda ctx: ctx.stack.push(ctx.read_code(20)))
+PUSH21 = instruction(0x74, "PUSH21", lambda ctx: ctx.stack.push(ctx.read_code(21)))
+PUSH22 = instruction(0x75, "PUSH22", lambda ctx: ctx.stack.push(ctx.read_code(22)))
+PUSH23 = instruction(0x76, "PUSH23", lambda ctx: ctx.stack.push(ctx.read_code(23)))
+PUSH24 = instruction(0x77, "PUSH24", lambda ctx: ctx.stack.push(ctx.read_code(24)))
+PUSH25 = instruction(0x78, "PUSH25", lambda ctx: ctx.stack.push(ctx.read_code(25)))
+PUSH26 = instruction(0x79, "PUSH26", lambda ctx: ctx.stack.push(ctx.read_code(26)))
+PUSH27 = instruction(0x7A, "PUSH27", lambda ctx: ctx.stack.push(ctx.read_code(27)))
+PUSH28 = instruction(0x7B, "PUSH28", lambda ctx: ctx.stack.push(ctx.read_code(28)))
+PUSH29 = instruction(0x7C, "PUSH29", lambda ctx: ctx.stack.push(ctx.read_code(29)))
+PUSH30 = instruction(0x7D, "PUSH30", lambda ctx: ctx.stack.push(ctx.read_code(30)))
+PUSH31 = instruction(0x7E, "PUSH31", lambda ctx: ctx.stack.push(ctx.read_code(31)))
+PUSH32 = instruction(0x7F, "PUSH32", lambda ctx: ctx.stack.push(ctx.read_code(32)))
 
 
 def decode_opcode(self) -> Instruction:
