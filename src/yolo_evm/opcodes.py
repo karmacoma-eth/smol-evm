@@ -73,6 +73,11 @@ MLOAD = instruction(
     "MLOAD",
     (lambda ctx: ctx.stack.push(ctx.memory.load_word(ctx.stack.pop()))),
 )
+MSTORE = instruction(
+    0x52,
+    "MSTORE",
+    (lambda ctx: ctx.memory.store_word(ctx.stack.pop(), ctx.stack.pop())),
+)
 MSTORE8 = instruction(
     0x53,
     "MSTORE8",
@@ -109,6 +114,7 @@ JUMPDEST = instruction(
     # This operation has no effect on machine state during execution.
     (lambda ctx: ctx),
 )
+
 PUSH1 = instruction(0x60, "PUSH1", lambda ctx: ctx.stack.push(ctx.read_code(1)))
 PUSH2 = instruction(0x61, "PUSH2", lambda ctx: ctx.stack.push(ctx.read_code(2)))
 PUSH3 = instruction(0x62, "PUSH3", lambda ctx: ctx.stack.push(ctx.read_code(3)))
@@ -142,6 +148,22 @@ PUSH30 = instruction(0x7D, "PUSH30", lambda ctx: ctx.stack.push(ctx.read_code(30
 PUSH31 = instruction(0x7E, "PUSH31", lambda ctx: ctx.stack.push(ctx.read_code(31)))
 PUSH32 = instruction(0x7F, "PUSH32", lambda ctx: ctx.stack.push(ctx.read_code(32)))
 
+DUP1 = instruction(0x80, "DUP1", lambda ctx: ctx.stack.push(ctx.stack.peek(0)))
+DUP2 = instruction(0x81, "DUP2", lambda ctx: ctx.stack.push(ctx.stack.peek(1)))
+DUP3 = instruction(0x82, "DUP3", lambda ctx: ctx.stack.push(ctx.stack.peek(2)))
+DUP4 = instruction(0x83, "DUP4", lambda ctx: ctx.stack.push(ctx.stack.peek(3)))
+DUP5 = instruction(0x84, "DUP5", lambda ctx: ctx.stack.push(ctx.stack.peek(4)))
+DUP6 = instruction(0x85, "DUP6", lambda ctx: ctx.stack.push(ctx.stack.peek(5)))
+DUP7 = instruction(0x86, "DUP7", lambda ctx: ctx.stack.push(ctx.stack.peek(6)))
+DUP8 = instruction(0x87, "DUP8", lambda ctx: ctx.stack.push(ctx.stack.peek(7)))
+DUP9 = instruction(0x88, "DUP9", lambda ctx: ctx.stack.push(ctx.stack.peek(8)))
+DUP10 = instruction(0x89, "DUP10", lambda ctx: ctx.stack.push(ctx.stack.peek(9)))
+DUP11 = instruction(0x8A, "DUP11", lambda ctx: ctx.stack.push(ctx.stack.peek(10)))
+DUP12 = instruction(0x8B, "DUP12", lambda ctx: ctx.stack.push(ctx.stack.peek(11)))
+DUP13 = instruction(0x8C, "DUP13", lambda ctx: ctx.stack.push(ctx.stack.peek(12)))
+DUP14 = instruction(0x8D, "DUP14", lambda ctx: ctx.stack.push(ctx.stack.peek(13)))
+DUP15 = instruction(0x8E, "DUP15", lambda ctx: ctx.stack.push(ctx.stack.peek(14)))
+DUP16 = instruction(0x8F, "DUP16", lambda ctx: ctx.stack.push(ctx.stack.peek(15)))
 
 def decode_opcode(self) -> Instruction:
     if self.pc < 0:

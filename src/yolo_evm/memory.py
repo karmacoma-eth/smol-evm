@@ -1,4 +1,4 @@
-from .constants import MAX_UINT256, MAX_UINT8
+from .constants import MAX_UINT256, MAX_UINT8, is_valid_uint256, is_valid_uint8
 
 ZERO_WORD = [0] * 32
 
@@ -13,19 +13,26 @@ class Memory:
         self.memory = []
 
     def store(self, offset: int, value: int) -> None:
-        if offset < 0 or offset > MAX_UINT256:
-            raise InvalidMemoryAccess({"offset": offset, "value": value})
-
-        if value < 0 or value > MAX_UINT8:
+        _validate_offset(offset)
+        if not is_valid_uint8(value):
             raise InvalidMemoryValue({"offset": offset, "value": value})
 
         self._expand_if_needed(offset)
         self.memory[offset] = value
 
-    def load(self, offset: int) -> int:
-        if offset < 0:
-            raise InvalidMemoryAccess({"offset": offset})
 
+    def store_word(self, offset: int, value: int) -> None:
+        _validate_offset(offset)
+        if not is_valid_uint256(value):
+            raise InvalidMemoryValue({"offset": offset, "value": value})
+
+        self._expand_if_needed(offset + 31)
+        for i in range (0, 32):
+            self.memory[offset + i] = value & (0xff << (i * 8))
+
+
+    def load(self, offset: int) -> int:
+        _validate_offset(offset)
         self._expand_if_needed(offset)
         return self.memory[offset]
 
@@ -33,11 +40,8 @@ class Memory:
         return int.from_bytes(self.load_range(offset, 32), "big")
 
     def load_range(self, offset: int, length: int) -> bytes:
-        if offset < 0:
-            raise InvalidMemoryAccess({"offset": offset, "length": length})
-
+        _validate_offset(offset)
         self._expand_if_needed(offset + length - 1)
-
         return bytes(self.memory[offset : offset + length])
 
     def active_words(self) -> int:
@@ -70,6 +74,10 @@ class Memory:
 
     def __repr__(self) -> str:
         return str(self)
+
+def _validate_offset(offset: int) -> None:
+    if not is_valid_uint256(offset):
+        raise InvalidMemoryAccess({"offset": offset})
 
 
 class InvalidMemoryAccess(Exception):
