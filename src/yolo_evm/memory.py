@@ -20,16 +20,14 @@ class Memory:
         self._expand_if_needed(offset)
         self.memory[offset] = value
 
-
     def store_word(self, offset: int, value: int) -> None:
         _validate_offset(offset)
         if not is_valid_uint256(value):
             raise InvalidMemoryValue({"offset": offset, "value": value})
 
         self._expand_if_needed(offset + 31)
-        for i in range (0, 32):
-            self.memory[offset + i] = value & (0xff << (i * 8))
-
+        for i in range(0, 32):
+            self.memory[offset + i] = value & (0xFF << (i * 8))
 
     def load(self, offset: int) -> int:
         _validate_offset(offset)
@@ -74,6 +72,7 @@ class Memory:
 
     def __repr__(self) -> str:
         return str(self)
+
 
 def _validate_offset(offset: int) -> None:
     if not is_valid_uint256(offset):

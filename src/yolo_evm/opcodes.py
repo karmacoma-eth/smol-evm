@@ -175,12 +175,12 @@ SWAP7 = instruction(0x96, "SWAP7", lambda ctx: ctx.stack.swap(7))
 SWAP8 = instruction(0x97, "SWAP8", lambda ctx: ctx.stack.swap(8))
 SWAP9 = instruction(0x98, "SWAP9", lambda ctx: ctx.stack.swap(9))
 SWAP10 = instruction(0x99, "SWAP10", lambda ctx: ctx.stack.swap(10))
-SWAP11 = instruction(0x9a, "SWAP11", lambda ctx: ctx.stack.swap(11))
-SWAP12 = instruction(0x9b, "SWAP12", lambda ctx: ctx.stack.swap(12))
-SWAP13 = instruction(0x9c, "SWAP13", lambda ctx: ctx.stack.swap(13))
-SWAP14 = instruction(0x9d, "SWAP14", lambda ctx: ctx.stack.swap(14))
-SWAP15 = instruction(0x9e, "SWAP15", lambda ctx: ctx.stack.swap(15))
-SWAP16 = instruction(0x9f, "SWAP16", lambda ctx: ctx.stack.swap(16))
+SWAP11 = instruction(0x9A, "SWAP11", lambda ctx: ctx.stack.swap(11))
+SWAP12 = instruction(0x9B, "SWAP12", lambda ctx: ctx.stack.swap(12))
+SWAP13 = instruction(0x9C, "SWAP13", lambda ctx: ctx.stack.swap(13))
+SWAP14 = instruction(0x9D, "SWAP14", lambda ctx: ctx.stack.swap(14))
+SWAP15 = instruction(0x9E, "SWAP15", lambda ctx: ctx.stack.swap(15))
+SWAP16 = instruction(0x9F, "SWAP16", lambda ctx: ctx.stack.swap(16))
 
 
 def decode_opcode(self) -> Instruction:

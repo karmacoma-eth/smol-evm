@@ -4,7 +4,7 @@ from yolo_evm.opcodes import ADD
 
 import pytest
 
-from yolo_evm.stack import Stack
+from shared import with_stack_contents
 
 @pytest.fixture
 def context() -> ExecutionContext:
@@ -23,7 +23,3 @@ def test_overflow(context):
     ADD.execute(with_stack_contents(context, [3, MAX_UINT256 - 1]))
     assert context.stack.pop() == 1
 
-def with_stack_contents(context, some_iterable):
-    for x in some_iterable:
-        context.stack.push(x)
-    return context

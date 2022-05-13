@@ -1,11 +1,19 @@
 from yolo_evm.constants import MAX_UINT256
+from yolo_evm.context import ExecutionContext
+from yolo_evm.opcodes import DUP1, DUP2
 from yolo_evm.stack import Stack, StackOverflow, StackUnderflow, InvalidStackItem
+
+from shared import with_stack_contents
 
 import pytest
 
 @pytest.fixture
 def stack() -> Stack:
     return Stack()
+
+@pytest.fixture
+def context() -> ExecutionContext:
+    return ExecutionContext()
 
 def test_underflow(stack):
     with pytest.raises(StackUnderflow):
@@ -61,3 +69,25 @@ def test_swap_underflow(stack):
     with pytest.raises(StackUnderflow):
         stack.swap(1)
 
+def test_peek(stack):
+    for x in [1, 2, 3]:
+        stack.push(x)
+    assert stack.peek(0) == 3
+    assert stack.peek(1) == 2
+    assert stack.peek(2) == 1
+
+def test_peek_underflow(stack):
+    with pytest.raises(StackUnderflow):
+        stack.peek(1)
+
+def test_dup1(context):
+    DUP1.execute(with_stack_contents(context, [1, 2, 3]))
+    assert context.stack.pop() == 3
+    assert context.stack.pop() == 3
+    assert context.stack.pop() == 2
+
+def test_dup2(context):
+    DUP2.execute(with_stack_contents(context, [1, 2, 3]))
+    assert context.stack.pop() == 2
+    assert context.stack.pop() == 3
+    assert context.stack.pop() == 2
