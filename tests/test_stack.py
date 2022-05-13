@@ -40,3 +40,24 @@ def test_invalid_value_too_big(stack):
     with pytest.raises(InvalidStackItem) as excinfo:
         stack.push(MAX_UINT256 + 1)
     assert excinfo.value.args[0]['item'] == MAX_UINT256 + 1
+
+def test_swap1(stack):
+    for x in [1, 2, 3]:
+        stack.push(x)
+    stack.swap(1)
+    assert stack.pop() == 2
+    assert stack.pop() == 3
+    assert stack.pop() == 1
+
+def test_swap2(stack):
+    for x in [1, 2, 3]:
+        stack.push(x)
+    stack.swap(2)
+    assert stack.pop() == 1
+    assert stack.pop() == 2
+    assert stack.pop() == 3
+
+def test_swap_underflow(stack):
+    with pytest.raises(StackUnderflow):
+        stack.swap(1)
+

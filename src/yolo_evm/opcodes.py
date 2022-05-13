@@ -165,6 +165,24 @@ DUP14 = instruction(0x8D, "DUP14", lambda ctx: ctx.stack.push(ctx.stack.peek(13)
 DUP15 = instruction(0x8E, "DUP15", lambda ctx: ctx.stack.push(ctx.stack.peek(14)))
 DUP16 = instruction(0x8F, "DUP16", lambda ctx: ctx.stack.push(ctx.stack.peek(15)))
 
+SWAP1 = instruction(0x90, "SWAP1", lambda ctx: ctx.stack.swap(1))
+SWAP2 = instruction(0x91, "SWAP2", lambda ctx: ctx.stack.swap(2))
+SWAP3 = instruction(0x92, "SWAP3", lambda ctx: ctx.stack.swap(3))
+SWAP4 = instruction(0x93, "SWAP4", lambda ctx: ctx.stack.swap(4))
+SWAP5 = instruction(0x94, "SWAP5", lambda ctx: ctx.stack.swap(5))
+SWAP6 = instruction(0x95, "SWAP6", lambda ctx: ctx.stack.swap(6))
+SWAP7 = instruction(0x96, "SWAP7", lambda ctx: ctx.stack.swap(7))
+SWAP8 = instruction(0x97, "SWAP8", lambda ctx: ctx.stack.swap(8))
+SWAP9 = instruction(0x98, "SWAP9", lambda ctx: ctx.stack.swap(9))
+SWAP10 = instruction(0x99, "SWAP10", lambda ctx: ctx.stack.swap(10))
+SWAP11 = instruction(0x9a, "SWAP11", lambda ctx: ctx.stack.swap(11))
+SWAP12 = instruction(0x9b, "SWAP12", lambda ctx: ctx.stack.swap(12))
+SWAP13 = instruction(0x9c, "SWAP13", lambda ctx: ctx.stack.swap(13))
+SWAP14 = instruction(0x9d, "SWAP14", lambda ctx: ctx.stack.swap(14))
+SWAP15 = instruction(0x9e, "SWAP15", lambda ctx: ctx.stack.swap(15))
+SWAP16 = instruction(0x9f, "SWAP16", lambda ctx: ctx.stack.swap(16))
+
+
 def decode_opcode(self) -> Instruction:
     if self.pc < 0:
         raise InvalidCodeOffset({"code": self.code.hex(), "pc": self.pc})
