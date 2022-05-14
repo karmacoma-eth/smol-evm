@@ -1,6 +1,6 @@
 from yolo_evm.context import ExecutionContext
 from yolo_evm.exceptions import InvalidJumpDestination
-from yolo_evm.opcodes import assemble, JUMP, JUMPI, PC, PUSH1, STOP, JUMPDEST, RETURN, MSTORE8
+from yolo_evm.opcodes import *
 from yolo_evm.runner import run, ExecutionLimitReached
 
 import pytest
@@ -104,3 +104,53 @@ def test_simple_jumpi_taken():
 
     ret = run(code)
     assert ret == b""
+
+
+def test_four_squared():
+    # 60048060005b8160125760005360016000f35b8201906001900390600556
+    code = assemble([
+                    # stack
+        PUSH1, 4,   # n=4
+        DUP1,       # n=4, loops=4
+        PUSH1, 0,   # n=4, loops=4, result=0
+
+        # loop_cond
+        # if loops != 0, jump to loop_body
+        JUMPDEST,
+        DUP2,       # n, loops, result, loops
+        PUSH1, 18,  # n, loops, result, loops, loop_body
+        JUMPI,      # n, loops, result
+
+        # store result in memory[0]
+        PUSH1, 0,   # n, loops, result, m_result
+        MSTORE8,    # n, loops
+
+        # return memory[0]
+        PUSH1, 1,   # n, loops, mem_length
+        PUSH1, 0,   # n, loops, mem_length, mem_offset
+        RETURN,
+
+        # loop_body
+        JUMPDEST,
+
+        # result += n
+        DUP3,       # n, loops, result, n
+        ADD,        # n, loops, result'=n+result
+
+        # loops -= 1
+        SWAP1,      # n, result', loops
+        PUSH1, 1,   # n, result', loops, 1
+        SWAP1,      # n, result', 1, loops
+        SUB,        # n, result', loops'=loops-1
+
+        # restore stack
+        SWAP1,      # n, loops', result'
+
+        # jump to loop_cond
+        PUSH1, 5,   # n, loops', result', loop_cond
+        JUMP,       # -> back to loop_cond
+    ])
+
+    ret = run(code, verbose=True, max_steps=200)
+    assert int.from_bytes(ret, 'big') == 4 * 4
+

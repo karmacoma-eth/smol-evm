@@ -27,7 +27,7 @@ class Memory:
 
         self._expand_if_needed(offset + 31)
         for i in range(0, 32):
-            self.memory[offset + i] = value & (0xFF << (i * 8))
+            self.memory[offset + 31 - i] = value & (0xFF << (i * 8))
 
     def load(self, offset: int) -> int:
         _validate_offset(offset)

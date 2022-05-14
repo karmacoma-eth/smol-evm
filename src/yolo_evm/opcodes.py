@@ -56,9 +56,11 @@ def execute_JUMPI(ctx: ExecutionContext) -> None:
     if cond != 0:
         _do_jump(ctx, target_pc)
 
+
 def execute_SUB(ctx: ExecutionContext) -> None:
     a, b = ctx.stack.pop(), ctx.stack.pop()
     ctx.stack.push((a - b) % 2 ** 256)
+
 
 STOP = instruction(0x00, "STOP", (lambda ctx: ctx.stop()))
 ADD = instruction(
