@@ -11,7 +11,8 @@ def main():
         sys.exit(1)
 
     data = sys.argv[1]
-    run(bytes.fromhex(data), verbose=True)
+    ret = run(bytes.fromhex(data), verbose=True)
+    print(f"0x{ret.hex()}")
 
 
 if __name__ == "__main__":
