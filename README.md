@@ -12,6 +12,12 @@ To run the EVM from scratch:
 curl -sSL https://install.python-poetry.org | python3 -
 ```
 
+> Install Dependencies
+
+```bash
+poetry install
+```
+
 > Run Tests
 
 ```bash
@@ -26,10 +32,7 @@ poetry run black src
 
 Write-up with examples:
 
-[Building an EVM from scratch (part 1)](https://karmacoma.notion.site/Building-an-EVM-from-scratch-part-1-c28ebb4200c94f6fb75948a5feffc686) [karmacoma.notion.so]
-
-
-[Building an EVM from scratch part 2 - branching instructions](https://karmacoma.notion.site/Building-an-EVM-from-scratch-part-2-branching-instructions-d864da164256426a9a1a0f7cc475c840) [karmacoma.notion.so]
+[Building an EVM from scratch]([https://karmacoma.notion.site/Building-an-EVM-from-scratch-part-1-c28ebb4200c94f6fb75948a5feffc686](https://karmacoma.notion.site/Building-an-EVM-from-scratch-series-90ee3c827b314e0599e705a1152eecf9)) [karmacoma.notion.so]
 
 
 # Random scripts
