@@ -1,6 +1,6 @@
-# yolo-evm
+# smol-evm
 
-A random collection of hacky scripts related to EVM development and challenges.
+👨‍🔬 An extensible Python implementation of the Ethereum yellow paper from scratch.
 
 # Installation
 
@@ -28,6 +28,8 @@ Write-up with examples:
 
 [Building an EVM from scratch (part 1)](https://karmacoma.notion.site/Building-an-EVM-from-scratch-part-1-c28ebb4200c94f6fb75948a5feffc686) [karmacoma.notion.so]
 
+
+[Building an EVM from scratch part 2 - branching instructions](https://karmacoma.notion.site/Building-an-EVM-from-scratch-part-2-branching-instructions-d864da164256426a9a1a0f7cc475c840) [karmacoma.notion.so]
 
 
 # Random scripts
