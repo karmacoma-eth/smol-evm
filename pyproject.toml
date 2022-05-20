@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "yolo-evm"
+name = "smol-evm"
 version = "0.1.0"
 description = ""
 authors = ["karmacoma <karmacoma.eth@gmail.com>"]
