@@ -1,7 +1,7 @@
-from yolo_evm.context import ExecutionContext
-from yolo_evm.exceptions import InvalidJumpDestination
-from yolo_evm.opcodes import *
-from yolo_evm.runner import run, ExecutionLimitReached
+from smol_evm.context import ExecutionContext
+from smol_evm.exceptions import InvalidJumpDestination
+from smol_evm.opcodes import *
+from smol_evm.runner import run, ExecutionLimitReached
 
 import pytest
 

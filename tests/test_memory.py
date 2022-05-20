@@ -1,6 +1,6 @@
-from yolo_evm.opcodes import assemble, PUSH1, RETURN, MLOAD, MSTORE8, MSIZE
-from yolo_evm.memory import Memory, InvalidMemoryAccess, InvalidMemoryValue
-from yolo_evm.runner import run
+from smol_evm.opcodes import assemble, PUSH1, RETURN, MLOAD, MSTORE8, MSIZE
+from smol_evm.memory import Memory, InvalidMemoryAccess, InvalidMemoryValue
+from smol_evm.runner import run
 
 import pytest
 

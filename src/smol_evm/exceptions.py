@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from yolo_evm.context import ExecutionContext
+from smol_evm.context import ExecutionContext
 
 
 @dataclass

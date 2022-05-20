@@ -1,6 +1,6 @@
-from yolo_evm.constants import MAX_UINT256
-from yolo_evm.context import ExecutionContext
-from yolo_evm.opcodes import ADD, SUB
+from smol_evm.constants import MAX_UINT256
+from smol_evm.context import ExecutionContext
+from smol_evm.opcodes import ADD, SUB
 
 import pytest
 

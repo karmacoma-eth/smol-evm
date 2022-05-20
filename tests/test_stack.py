@@ -1,7 +1,7 @@
-from yolo_evm.constants import MAX_UINT256
-from yolo_evm.context import ExecutionContext
-from yolo_evm.opcodes import DUP1, DUP2
-from yolo_evm.stack import Stack, StackOverflow, StackUnderflow, InvalidStackItem
+from smol_evm.constants import MAX_UINT256
+from smol_evm.context import ExecutionContext
+from smol_evm.opcodes import DUP1, DUP2
+from smol_evm.stack import Stack, StackOverflow, StackUnderflow, InvalidStackItem
 
 from shared import with_stack_contents
 

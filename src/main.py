@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from yolo_evm.runner import run
+from smol_evm.runner import run
 
 import sys
 
