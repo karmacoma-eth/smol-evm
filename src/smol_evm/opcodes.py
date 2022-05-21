@@ -78,6 +78,11 @@ SUB = instruction(
     "SUB",
     execute_SUB,
 )
+CALLDATALOAD = instruction(
+    0x35,
+    "CALLDATALOAD",
+    lambda ctx: ctx.stack.push(ctx.calldata.read_word(ctx.stack.pop())),
+)
 MLOAD = instruction(
     0x51,
     "MLOAD",

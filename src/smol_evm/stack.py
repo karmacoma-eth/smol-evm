@@ -24,7 +24,7 @@ class Stack:
 
     def peek(self, i) -> int:
         """returns a stack element without popping it -- peek(0) is the top element, peek(1) is the next one, etc."""
-        if len(self.stack) < i:
+        if len(self.stack) <= i:
             raise StackUnderflow()
 
         return self.stack[-(i + 1)]

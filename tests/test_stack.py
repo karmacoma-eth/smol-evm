@@ -15,9 +15,27 @@ def stack() -> Stack:
 def context() -> ExecutionContext:
     return ExecutionContext()
 
-def test_underflow(stack):
+def test_underflow_pop(stack):
     with pytest.raises(StackUnderflow):
         stack.pop()
+
+def test_underflow_empty_peek(stack):
+    with pytest.raises(StackUnderflow):
+        stack.peek(0)
+
+def test_underflow_non_empty_peek(stack):
+    stack.push(1)
+    stack.push(2)
+
+    with pytest.raises(StackUnderflow):
+        stack.peek(2)
+
+def test_happy_peek(stack):
+    stack.push(1)
+    stack.push(2)
+    assert stack.peek(0) == 2
+    assert stack.peek(1) == 1
+
 
 def test_overflow():
     stack = Stack(max_depth=1)
@@ -91,3 +109,4 @@ def test_dup2(context):
     assert context.stack.pop() == 2
     assert context.stack.pop() == 3
     assert context.stack.pop() == 2
+

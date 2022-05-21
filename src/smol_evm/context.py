@@ -1,5 +1,11 @@
+from .constants import is_valid_uint256
 from .memory import Memory
 from .stack import Stack
+
+
+class InvalidCalldataAccess(Exception):
+    ...
+
 
 # see yellow paper section 9.4.3
 def valid_jump_destinations(code: bytes) -> set[int]:
@@ -18,8 +24,29 @@ def valid_jump_destinations(code: bytes) -> set[int]:
     return jumpdests
 
 
+class Calldata:
+    def __init__(self, data=bytes()) -> None:
+        self.data = data
+
+    def read_byte(self, offset: int) -> int:
+        if offset < 0:
+            raise InvalidCalldataAccess({"offset": offset})
+
+        return self.data[offset] if offset < len(self.data) else 0
+
+    def read_word(self, offset: int) -> int:
+        return int.from_bytes(
+            [self.read_byte(x) for x in range(offset, offset + 32)], "big"
+        )
+
+    def __len__(self) -> int:
+        return len(self.data)
+
+
 class ExecutionContext:
-    def __init__(self, code=bytes(), pc=0, stack=None, memory=None) -> None:
+    def __init__(
+        self, code=bytes(), pc=0, stack=None, memory=None, calldata=None
+    ) -> None:
         self.code = code
         self.stack = stack if stack else Stack()
         self.memory = memory if memory else Memory()
@@ -27,6 +54,7 @@ class ExecutionContext:
         self.stopped = False
         self.returndata = bytes()
         self.jumpdests = valid_jump_destinations(code)
+        self.calldata = calldata if calldata else Calldata()
 
     def set_return_data(self, offset: int, length: int) -> None:
         self.stopped = True
