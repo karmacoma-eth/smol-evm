@@ -1,6 +1,6 @@
 from smol_evm.constants import MAX_UINT256
 from smol_evm.context import ExecutionContext, Calldata
-from smol_evm.opcodes import CALLDATALOAD
+from smol_evm.opcodes import CALLDATALOAD, CALLDATASIZE
 from shared import with_stack_contents, with_calldata
 
 import pytest
@@ -34,3 +34,10 @@ def test_calldataload_uint256_overflow(context):
     CALLDATALOAD.execute(context)
     assert context.stack.pop() == 0
 
+def test_calldatasize_empty(context):
+    CALLDATASIZE.execute(context)
+    assert context.stack.pop() == 0
+
+def test_calldatasize_one(context):
+    CALLDATASIZE.execute(with_calldata(context, [0]))
+    assert context.stack.pop() == 1

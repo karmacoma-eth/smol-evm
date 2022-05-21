@@ -83,6 +83,11 @@ CALLDATALOAD = instruction(
     "CALLDATALOAD",
     lambda ctx: ctx.stack.push(ctx.calldata.read_word(ctx.stack.pop())),
 )
+CALLDATASIZE = instruction(
+    0x36,
+    "CALLDATASIZE",
+    lambda ctx: ctx.stack.push(len(ctx.calldata)),
+)
 MLOAD = instruction(
     0x51,
     "MLOAD",
