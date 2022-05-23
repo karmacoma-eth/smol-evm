@@ -25,18 +25,16 @@ class DuplicateOpcode(Exception):
     ...
 
 
-INSTRUCTIONS = []
-INSTRUCTIONS_BY_OPCODE = {}
+INSTRUCTIONS = [None] * 256
 
 
 def instruction(opcode: int, name: str, execute_func: callable):
     instruction = Instruction(opcode, name)
     instruction.execute = execute_func
-    INSTRUCTIONS.append(instruction)
 
-    if opcode in INSTRUCTIONS_BY_OPCODE:
+    if INSTRUCTIONS[opcode] is not None:
         raise DuplicateOpcode({"opcode": opcode})
-    INSTRUCTIONS_BY_OPCODE[opcode] = instruction
+    INSTRUCTIONS[opcode] = instruction
 
     return instruction
 
