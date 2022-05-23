@@ -6,10 +6,9 @@ from .exceptions import InvalidCodeOffset, UnknownOpcode, InvalidJumpDestination
 
 
 class Instruction:
-    def __init__(self, opcode: int, name: str, arg_length=0):
+    def __init__(self, opcode: int, name: str):
         self.opcode = opcode
         self.name = name
-        self.arg_length = arg_length
 
     def execute(self, context: ExecutionContext) -> None:
         raise NotImplementedError
@@ -201,18 +200,18 @@ SWAP15 = instruction(0x9E, "SWAP15", lambda ctx: ctx.stack.swap(15))
 SWAP16 = instruction(0x9F, "SWAP16", lambda ctx: ctx.stack.swap(16))
 
 
-def decode_opcode(self) -> Instruction:
-    if self.pc < 0:
-        raise InvalidCodeOffset({"code": self.code.hex(), "pc": self.pc})
+def decode_opcode(context) -> Instruction:
+    if context.pc < 0:
+        raise InvalidCodeOffset({"code": context.code.hex(), "pc": context.pc})
 
     # section 9.4.1 of the yellow paper, if pc is outside code, then the operation to be executed is STOP
-    if self.pc >= len(self.code):
+    if context.pc >= len(context.code):
         return STOP
 
-    opcode = self.read_code(1)
-    instruction = INSTRUCTIONS_BY_OPCODE.get(opcode)
+    opcode = context.read_code(1)
+    instruction = INSTRUCTIONS[opcode]
     if instruction is None:
-        raise UnknownOpcode({"opcode": opcode}, content=self)
+        raise UnknownOpcode({"opcode": opcode}, content=context)
 
     return instruction
 
