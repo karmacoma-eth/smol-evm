@@ -1,22 +1,31 @@
 #!/usr/bin/env python3
 
+import argparse
+
+from smol_evm.context import Calldata
 from smol_evm.runner import run
 
 import sys
 
 
+def strip_0x(s: str):
+    if s and s.startswith("0x"):
+        return s[2:]
+
+
 def main():
-    if len(sys.argv) != 2:
-        print("Usage: {} <hexdata>".format(sys.argv[0]))
-        sys.exit(1)
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--code", help="hex data of the code to run", required=True)
+    parser.add_argument(
+        "--calldata",
+        help="hex data to use as input, e.g. 0xcfae3217",
+    )
+    args = parser.parse_args()
 
-    data = sys.argv[1]
+    code = bytes.fromhex(strip_0x(args.code))
+    calldata = bytes.fromhex(strip_0x(args.calldata)) if args.calldata else bytes()
 
-    # be cool with a 0x prefix
-    if data.startswith("0x"):
-        data = data[2:]
-
-    ret = run(bytes.fromhex(data), verbose=True)
+    ret = run(code=code, calldata=calldata, verbose=True)
     print(f"0x{ret.hex()}")
 
 

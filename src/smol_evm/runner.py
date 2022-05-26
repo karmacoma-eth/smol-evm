@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from .context import ExecutionContext
+from .context import ExecutionContext, Calldata
 from .opcodes import decode_opcode
 
 
@@ -9,11 +9,11 @@ class ExecutionLimitReached(Exception):
     context: ExecutionContext
 
 
-def run(code: bytes, verbose=False, max_steps=0) -> None:
+def run(code: bytes, calldata: bytes, verbose=False, max_steps=0) -> None:
     """
     Executes code in a fresh context.
     """
-    context = ExecutionContext(code=code)
+    context = ExecutionContext(code=code, calldata=Calldata(calldata))
     num_steps = 0
 
     while not context.stopped:
