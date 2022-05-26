@@ -11,6 +11,11 @@ def main():
         sys.exit(1)
 
     data = sys.argv[1]
+
+    # be cool with a 0x prefix
+    if data.startswith("0x"):
+        data = data[2:]
+
     ret = run(bytes.fromhex(data), verbose=True)
     print(f"0x{ret.hex()}")
 
