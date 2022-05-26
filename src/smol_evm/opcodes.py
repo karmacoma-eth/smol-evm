@@ -211,7 +211,7 @@ def decode_opcode(context) -> Instruction:
     opcode = context.read_code(1)
     instruction = INSTRUCTIONS[opcode]
     if instruction is None:
-        raise UnknownOpcode({"opcode": opcode}, content=context)
+        raise UnknownOpcode({"opcode": opcode}, context=context)
 
     return instruction
 
