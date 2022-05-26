@@ -9,7 +9,7 @@ class ExecutionLimitReached(Exception):
     context: ExecutionContext
 
 
-def run(code: bytes, calldata: bytes, verbose=False, max_steps=0) -> None:
+def run(code: bytes, calldata=bytes(), verbose=False, max_steps=0) -> None:
     """
     Executes code in a fresh context.
     """

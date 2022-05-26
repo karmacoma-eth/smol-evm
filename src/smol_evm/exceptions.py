@@ -15,14 +15,14 @@ class UnknownOpcode(EVMException):
     def __str__(self):
         return f"opcode={hex(self.opcode)}, context={self.context}"
 
-
+@dataclass
 class InvalidCodeOffset(EVMException):
     offset: int
 
     def __str__(self):
         return f"offset={hex(self.opcode)}, context={self.context}"
 
-
+@dataclass
 class InvalidJumpDestination(EVMException):
     target_pc: int
 
