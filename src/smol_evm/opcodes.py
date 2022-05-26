@@ -83,6 +83,11 @@ LT = instruction(
     "LT",
     execute_LT
 )
+EQ = instruction(
+    0x14,
+    "EQ",
+    lambda ctx: ctx.stack.push(1 if ctx.stack.pop() == ctx.stack.pop() else 0),
+)
 CALLDATALOAD = instruction(
     0x35,
     "CALLDATALOAD",
