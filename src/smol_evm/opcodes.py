@@ -58,6 +58,9 @@ def execute_SUB(ctx: ExecutionContext) -> None:
     a, b = ctx.stack.pop(), ctx.stack.pop()
     ctx.stack.push((a - b) % 2 ** 256)
 
+def execute_LT(ctx: ExecutionContext) -> None:
+    a, b = ctx.stack.pop(), ctx.stack.pop()
+    ctx.stack.push(1 if a < b else 0)
 
 STOP = instruction(0x00, "STOP", (lambda ctx: ctx.stop()))
 ADD = instruction(
@@ -74,6 +77,11 @@ SUB = instruction(
     0x03,
     "SUB",
     execute_SUB,
+)
+LT = instruction(
+    0x10,
+    "LT",
+    execute_LT
 )
 CALLDATALOAD = instruction(
     0x35,
