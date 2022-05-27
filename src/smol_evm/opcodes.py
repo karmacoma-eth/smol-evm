@@ -58,13 +58,19 @@ def execute_SUB(ctx: ExecutionContext) -> None:
     a, b = ctx.stack.pop(), ctx.stack.pop()
     ctx.stack.push((a - b) % 2 ** 256)
 
+
 def execute_LT(ctx: ExecutionContext) -> None:
     a, b = ctx.stack.pop(), ctx.stack.pop()
     ctx.stack.push(1 if a < b else 0)
 
+def execute_GT(ctx: ExecutionContext) -> None:
+    a, b = ctx.stack.pop(), ctx.stack.pop()
+    ctx.stack.push(1 if a > b else 0)
+
 def execute_SHR(ctx: ExecutionContext) -> None:
     a, b = ctx.stack.pop(), ctx.stack.pop()
     ctx.stack.push(b >> a)
+
 
 STOP = instruction(0x00, "STOP", (lambda ctx: ctx.stop()))
 ADD = instruction(
@@ -82,18 +88,15 @@ SUB = instruction(
     "SUB",
     execute_SUB,
 )
-LT = instruction(
-    0x10,
-    "LT",
-    execute_LT
-)
+LT = instruction(0x10, "LT", execute_LT)
+GT = instruction(0x11, "GT", execute_GT)
 EQ = instruction(
     0x14,
     "EQ",
     lambda ctx: ctx.stack.push(1 if ctx.stack.pop() == ctx.stack.pop() else 0),
 )
 SHR = instruction(
-    0x1c,
+    0x1C,
     "SHR",
     execute_SHR,
 )
@@ -239,11 +242,8 @@ RETURN = instruction(
 )
 
 # TODO: no-op for now
-REVERT = instruction(
-    0xFD,
-    "REVERT",
-    (lambda ctx: ctx)
-)
+REVERT = instruction(0xFD, "REVERT", (lambda ctx: ctx))
+
 
 def decode_opcode(context) -> Instruction:
     if context.pc < 0:
