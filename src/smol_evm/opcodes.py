@@ -63,9 +63,11 @@ def execute_LT(ctx: ExecutionContext) -> None:
     a, b = ctx.stack.pop(), ctx.stack.pop()
     ctx.stack.push(1 if a < b else 0)
 
+
 def execute_GT(ctx: ExecutionContext) -> None:
     a, b = ctx.stack.pop(), ctx.stack.pop()
     ctx.stack.push(1 if a > b else 0)
+
 
 def execute_SHR(ctx: ExecutionContext) -> None:
     a, b = ctx.stack.pop(), ctx.stack.pop()
@@ -242,7 +244,7 @@ RETURN = instruction(
 )
 
 # TODO: no-op for now
-REVERT = instruction(0xFD, "REVERT", (lambda ctx: ctx))
+REVERT = instruction(0xFD, "REVERT", (lambda ctx: ctx.stop()))
 
 
 def decode_opcode(context) -> Instruction:
