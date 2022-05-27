@@ -62,6 +62,10 @@ def execute_LT(ctx: ExecutionContext) -> None:
     a, b = ctx.stack.pop(), ctx.stack.pop()
     ctx.stack.push(1 if a < b else 0)
 
+def execute_SHR(ctx: ExecutionContext) -> None:
+    a, b = ctx.stack.pop(), ctx.stack.pop()
+    ctx.stack.push(b >> a)
+
 STOP = instruction(0x00, "STOP", (lambda ctx: ctx.stop()))
 ADD = instruction(
     0x01,
@@ -87,6 +91,11 @@ EQ = instruction(
     0x14,
     "EQ",
     lambda ctx: ctx.stack.push(1 if ctx.stack.pop() == ctx.stack.pop() else 0),
+)
+SHR = instruction(
+    0x1c,
+    "SHR",
+    execute_SHR,
 )
 ISZERO = instruction(
     0x15,
