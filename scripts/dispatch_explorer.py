@@ -116,10 +116,16 @@ def main():
     for selector in selectors:
         debug(f"+ cast 4byte {selector}")
 
-        cast = subprocess.run(f"cast 4byte {selector}".split(), stdout=subprocess.PIPE)
         print(f"{selector}:")
-        for line in cast.stdout.decode().splitlines():
-            print(f"  - {line}")
+
+        cast = subprocess.run(f"cast 4byte {selector}".split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        if cast.returncode != 0:
+            print(f"  (no signature found for provided function selector)")
+
+        else:
+            for line in cast.stdout.decode().splitlines():
+                print(f"  - {line}")
+
         print()
 
 
