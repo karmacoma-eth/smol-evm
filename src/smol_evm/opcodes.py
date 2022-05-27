@@ -102,6 +102,12 @@ ISZERO = instruction(
     "ISZERO",
     lambda ctx: ctx.stack.push(1 if ctx.stack.pop() == 0 else 0),
 )
+# TODO: placeholder for now
+CALLVALUE = instruction(
+    0x34,
+    "CALLVALUE",
+    lambda ctx: ctx.stack.push(0),
+)
 CALLDATALOAD = instruction(
     0x35,
     "CALLDATALOAD",
@@ -230,6 +236,13 @@ RETURN = instruction(
     0xF3,
     "RETURN",
     (lambda ctx: ctx.set_return_data(ctx.stack.pop(), ctx.stack.pop())),
+)
+
+# TODO: no-op for now
+REVERT = instruction(
+    0xFD,
+    "REVERT",
+    (lambda ctx: ctx)
 )
 
 def decode_opcode(context) -> Instruction:
