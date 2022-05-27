@@ -88,6 +88,11 @@ EQ = instruction(
     "EQ",
     lambda ctx: ctx.stack.push(1 if ctx.stack.pop() == ctx.stack.pop() else 0),
 )
+ISZERO = instruction(
+    0x15,
+    "ISZERO",
+    lambda ctx: ctx.stack.push(1 if ctx.stack.pop() == 0 else 0),
+)
 CALLDATALOAD = instruction(
     0x35,
     "CALLDATALOAD",

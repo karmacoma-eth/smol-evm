@@ -1,6 +1,6 @@
 from smol_evm.constants import MAX_UINT256
 from smol_evm.context import ExecutionContext
-from smol_evm.opcodes import LT, EQ
+from smol_evm.opcodes import LT, EQ, ISZERO
 
 import pytest
 
@@ -32,4 +32,12 @@ def test_eq_zero(context):
 
 def test_eq_not_equal(context):
     EQ.execute(with_stack_contents(context, [1, 0]))
+    assert context.stack.pop() == 0
+
+def test_iszero_zero(context):
+    ISZERO.execute(with_stack_contents(context, [1, 0]))
+    assert context.stack.pop() == 1
+
+def test_iszero_notzero(context):
+    ISZERO.execute(with_stack_contents(context, [0, 1]))
     assert context.stack.pop() == 0
