@@ -9,7 +9,7 @@ class ExecutionLimitReached(Exception):
     context: ExecutionContext
 
 
-def run(code: bytes, calldata=bytes(), verbose=False, max_steps=0) -> None:
+def run(code: bytes, calldata=bytes(), verbose=False, max_steps=0, prehook=None, posthook=None) -> None:
     """
     Executes code in a fresh context.
     """
@@ -19,7 +19,14 @@ def run(code: bytes, calldata=bytes(), verbose=False, max_steps=0) -> None:
     while not context.stopped:
         pc_before = context.pc
         instruction = decode_opcode(context)
+
+        if prehook:
+            prehook(context, instruction)
+
         instruction.execute(context)
+
+        if posthook:
+            posthook(context, instruction)
 
         num_steps += 1
         if max_steps > 0 and num_steps > max_steps:
@@ -27,7 +34,7 @@ def run(code: bytes, calldata=bytes(), verbose=False, max_steps=0) -> None:
 
         if verbose:
             print(f"{instruction} @ pc={pc_before}")
-            print(context)
+            print(f"stack: [{', '.join(hex(x) for x in context.stack.stack)}]")
             print()
 
     if verbose:

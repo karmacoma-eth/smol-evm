@@ -5,8 +5,6 @@ import argparse
 from smol_evm.context import Calldata
 from smol_evm.runner import run
 
-import sys
-
 
 def strip_0x(s: str):
     if s and s.startswith("0x"):
