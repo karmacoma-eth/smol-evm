@@ -1,6 +1,6 @@
 from smol_evm.constants import MAX_UINT256
 from smol_evm.context import ExecutionContext
-from smol_evm.opcodes import DUP1, DUP2
+from smol_evm.opcodes import DUP1, DUP2, POP
 from smol_evm.stack import Stack, StackOverflow, StackUnderflow, InvalidStackItem
 
 from shared import with_stack_contents
@@ -110,3 +110,7 @@ def test_dup2(context):
     assert context.stack.pop() == 3
     assert context.stack.pop() == 2
 
+def test_pop_instruction(context):
+    POP.execute(with_stack_contents(context, [1, 2, 3]))
+    assert context.stack.pop() == 2
+    assert context.stack.pop() == 1

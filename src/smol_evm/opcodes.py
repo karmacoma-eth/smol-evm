@@ -112,6 +112,11 @@ CALLDATASIZE = instruction(
     "CALLDATASIZE",
     lambda ctx: ctx.stack.push(len(ctx.calldata)),
 )
+POP = instruction(
+    0x50,
+    "POP",
+    lambda ctx: ctx.stack.pop(),
+)
 MLOAD = instruction(
     0x51,
     "MLOAD",
@@ -126,11 +131,6 @@ MSTORE8 = instruction(
     0x53,
     "MSTORE8",
     (lambda ctx: ctx.memory.store(ctx.stack.pop(), ctx.stack.pop() % 256)),
-)
-RETURN = instruction(
-    0xF3,
-    "RETURN",
-    (lambda ctx: ctx.set_return_data(ctx.stack.pop(), ctx.stack.pop())),
 )
 JUMP = instruction(
     0x56,
@@ -226,6 +226,11 @@ SWAP14 = instruction(0x9D, "SWAP14", lambda ctx: ctx.stack.swap(14))
 SWAP15 = instruction(0x9E, "SWAP15", lambda ctx: ctx.stack.swap(15))
 SWAP16 = instruction(0x9F, "SWAP16", lambda ctx: ctx.stack.swap(16))
 
+RETURN = instruction(
+    0xF3,
+    "RETURN",
+    (lambda ctx: ctx.set_return_data(ctx.stack.pop(), ctx.stack.pop())),
+)
 
 def decode_opcode(context) -> Instruction:
     if context.pc < 0:
