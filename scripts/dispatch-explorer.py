@@ -118,7 +118,11 @@ def main():
 
         print(f"{selector}:")
 
-        cast = subprocess.run(f"cast 4byte {selector}".split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        cast = subprocess.run(
+            f"cast 4byte {selector}".split(),
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
         if cast.returncode != 0:
             print(f"  (no signature found for provided function selector)")
 

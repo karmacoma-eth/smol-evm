@@ -1,8 +1,19 @@
 #!/usr/bin/env python3
 
+from multiprocessing import Pool, Event
+from web3 import Web3
+
+import os
 import random
 import sys
-from web3 import Web3
+
+
+def init_pool_processes(the_shutdown_event):
+    """
+    Initialize each process with the global shutdown event
+    """
+    global shutdown_event
+    shutdown_event = the_shutdown_event
 
 
 def _create2(deployer, salt_hexstr, hashed_bytecode):
@@ -24,40 +35,45 @@ def create2(deployer, salt, bytecode):
     return _create2(deployer, salt_hexstr, hashed_bytecode)
 
 
-def create2_search(deployer, predicate, bytecode):
-    salt = 0
-    hashed_bytecode = Web3.toHex(Web3.keccak(hexstr=bytecode))[2:]
-    while True:
-        salt += 1
-        salt_hexstr = hex(salt)[2:].zfill(64)
-        addr = _create2(deployer, salt_hexstr, hashed_bytecode)
-        if salt % 1000 == 0:
-            print(".", end="", flush=True)
+class Create2Searcher:
+    def __init__(self, deployer_addr, predicate_str, bytecode):
+        self.deployer_addr = deployer_addr
+        self.predicate_str = predicate_str
+        self.hashed_bytecode = Web3.toHex(Web3.keccak(hexstr=bytecode))[2:]
 
-        if predicate(addr):
-            print(f"\nFound a match after {salt} attempts: {addr}")
-            break
+    def search(self, starting_salt=0):
+        predicate = eval(self.predicate_str)
+        salt = starting_salt
+        print("Starting search with salt:", hex(salt)[2:].zfill(64))
+        while True:
+            salt_hexstr = hex(salt)[2:].zfill(64)
+            addr = _create2(self.deployer_addr, salt_hexstr, self.hashed_bytecode)
+            salt += 1
+
+            if predicate(addr):
+                print(
+                    f"\nFound a match! Deploying with salt={salt} to get address {addr}"
+                )
+                shutdown_event.set()
+
+            if (salt % 10000) == 0 and shutdown_event.is_set():
+                print(f"Stopped searching after {salt - starting_salt} attempts")
+                break
 
 
 def main():
     if len(sys.argv) != 4:
-        print(f"Usage: python3 {sys.argv[0]} deployer_addr <salt | predicate> bytecode")
-        print()
         print(
-            f"When passing a salt value, this script prints the address of the newly deployed contract based on the deployer address and bytecode hash."
-        )
-        print(
-            f"Example: python3 {sys.argv[0]} Bf6cE3350513EfDcC0d5bd5413F1dE53D0E4f9aE 42 602a60205260206020f3"
-        )
-        print()
-        print(
-            f"When passing a predicate, this script will search for a salt value such that the new address satisfies the predicate."
-        )
-        print(
-            f"Example: python3 {sys.argv[0]} Bf6cE3350513EfDcC0d5bd5413F1dE53D0E4f9aE 'lambda addr: \"badc0de\" in addr.lower()' 602a60205260206020f3"
-        )
-        print(
-            f"Another predicate that may be useful: 'lambda addr: addr.startswith(\"0\" * 8)' 602a60205260206020f3"
+            f"""Usage: python3 {sys.argv[0]} deployer_addr <salt | predicate> bytecode
+
+When passing a salt value, this script prints the address of the newly deployed contract based on the deployer address and bytecode hash.
+Example: python3 {sys.argv[0]} Bf6cE3350513EfDcC0d5bd5413F1dE53D0E4f9aE 42 602a60205260206020f3
+
+When passing a predicate, this script will search for a salt value such that the new address satisfies the predicate.
+Example: python3 {sys.argv[0]} Bf6cE3350513EfDcC0d5bd5413F1dE53D0E4f9aE 'lambda addr: \"badc0de\" in addr.lower()' 602a60205260206020f3
+
+Another predicate that may be useful: 'lambda addr: addr.startswith(\"0\" * 8)'
+"""
         )
         sys.exit(0)
 
@@ -70,9 +86,25 @@ def main():
     try:
         salt = int(sys.argv[2])
         print(create2(deployer_addr, salt, bytecode))
+        sys.exit(0)
     except ValueError:
-        predicate = eval(sys.argv[2])
-        create2_search(deployer_addr, predicate, bytecode)
+        pass
+
+    predicate_str = sys.argv[2]
+    process_count = os.cpu_count()
+
+    print(f"👷‍♂️ Starting {process_count} worker processes")
+    shutdown_event = Event()
+    searcher = Create2Searcher(deployer_addr, predicate_str, bytecode)
+
+    with Pool(
+        processes=process_count,
+        initializer=init_pool_processes,
+        initargs=(shutdown_event,),
+    ) as pool:
+        pool.map(searcher.search, [2 ** 64 * x for x in range(os.cpu_count())])
+        pool.close()
+        pool.join()
 
 
 if __name__ == "__main__":
