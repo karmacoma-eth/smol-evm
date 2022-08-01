@@ -143,6 +143,11 @@ MSTORE8 = instruction(
     "MSTORE8",
     (lambda ctx: ctx.memory.store(ctx.stack.pop(), ctx.stack.pop() % 256)),
 )
+SLOAD = instruction(
+    0x54,
+    "SLOAD",
+    (lambda ctx: ctx.stack.push(ctx.storage.get(ctx.stack.pop()))),
+)
 JUMP = instruction(
     0x56,
     "JUMP",

@@ -6,6 +6,12 @@ from .stack import Stack
 class InvalidCalldataAccess(Exception):
     ...
 
+class InvalidStorageSlot(Exception):
+    ...
+
+class InvalidStorageValue(Exception):
+    ...
+
 
 # see yellow paper section 9.4.3
 def valid_jump_destinations(code: bytes) -> set[int]:
@@ -45,7 +51,7 @@ class Calldata:
 
 class ExecutionContext:
     def __init__(
-        self, code=bytes(), pc=0, stack=None, memory=None, calldata=None
+        self, code=bytes(), pc=0, stack=None, memory=None, calldata=None, storage=None
     ) -> None:
         self.code = code
         self.stack = stack if stack else Stack()
@@ -55,6 +61,7 @@ class ExecutionContext:
         self.returndata = bytes()
         self.jumpdests = valid_jump_destinations(code)
         self.calldata = calldata if calldata else Calldata()
+        self.storage = storage if storage else Storage()
 
     def set_return_data(self, offset: int, length: int) -> None:
         self.stopped = True
@@ -80,4 +87,53 @@ class ExecutionContext:
         return "stack: " + str(self.stack) + "\nmemory: " + str(self.memory)
 
     def __repr__(self) -> str:
+        return str(self)
+
+class Storage():
+    def __init__(self, init=dict()) -> None:
+        self.data = init
+
+    def get(self, slot):
+        if not is_valid_uint256(slot):
+            raise InvalidStorageSlot(slot)
+        return self.data.get(slot, 0)
+
+    def put(self, slot, value):
+        if not is_valid_uint256(slot):
+            raise InvalidStorageSlot(slot)
+
+        if not is_valid_uint256(value):
+            raise InvalidStorageValue(value)
+
+        self.data[slot] = value
+
+
+class AccountState:
+    def __init__(self, nonce=0, balance=0, storage=None, code=bytes()) -> None:
+        self.nonce = nonce
+        self.balance = balance
+        self.storage = storage if storage else Storage()
+        self.code = code
+
+    def is_empty(self):
+        return self.nonce == 0 and self.balance == 0 and self.code == b''
+
+    def __str__(self):
+        return f"nonce: {self.nonce}, balance: {self.balance}, code: {self.code}, storage: {self.storage}"
+
+
+class WorldState:
+    def __init__(self, accounts=dict()) -> None:
+        self.accounts = accounts
+
+    def get(self, address):
+        return self.accounts[address]
+
+    def set(self, address, account):
+        self.accounts[address] = account
+
+    def __str__(self):
+        return str(self.accounts)
+
+    def __repr__(self):
         return str(self)
