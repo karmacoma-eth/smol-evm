@@ -148,6 +148,11 @@ SLOAD = instruction(
     "SLOAD",
     (lambda ctx: ctx.stack.push(ctx.storage.get(ctx.stack.pop()))),
 )
+SSTORE = instruction(
+    0x55,
+    "SSTORE",
+    (lambda ctx: ctx.storage.put(ctx.stack.pop(), ctx.stack.pop())),
+)
 JUMP = instruction(
     0x56,
     "JUMP",

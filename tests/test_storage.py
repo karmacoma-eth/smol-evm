@@ -1,6 +1,6 @@
 from smol_evm.constants import MAX_UINT256
 from smol_evm.context import ExecutionContext, InvalidStorageSlot, InvalidStorageValue
-from smol_evm.opcodes import SLOAD
+from smol_evm.opcodes import SLOAD, SSTORE
 from shared import with_stack_contents
 
 import pytest
@@ -44,4 +44,19 @@ def test_simple_sload_preinitialized(context):
     context.storage.put(1, 42)
     SLOAD.execute(with_stack_contents(context, (1,)))
     assert context.stack.pop() == 42
+
+
+def test_simple_sstore(context):
+    SSTORE.execute(with_stack_contents(context, (1, 1,)))
+    assert context.storage.get(0) == 0
+    assert context.storage.get(1) == 1
+
+
+def test_overwrite_sstore(context):
+    slot, init_value = 1, 1
+    SSTORE.execute(with_stack_contents(context, (init_value, slot)))
+
+    overwrite_value = 42
+    SSTORE.execute(with_stack_contents(context, (overwrite_value, slot,)))
+    assert context.storage.get(slot) == overwrite_value
 
