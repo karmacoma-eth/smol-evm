@@ -7,8 +7,7 @@ from smol_evm.runner import run
 
 
 def strip_0x(s: str):
-    if s and s.startswith("0x"):
-        return s[2:]
+    return s[2:] if s and s.startswith("0x") else s
 
 
 def main():
@@ -23,7 +22,7 @@ def main():
     code = bytes.fromhex(strip_0x(args.code))
     calldata = bytes.fromhex(strip_0x(args.calldata)) if args.calldata else bytes()
 
-    ret = run(code=code, calldata=calldata, verbose=True)
+    ret = run(code=code, calldata=calldata, verbose=True, print_stack=True, print_memory=True)
     print(f"0x{ret.hex()}")
 
 

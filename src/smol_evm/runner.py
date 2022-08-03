@@ -16,6 +16,8 @@ def run(
     max_steps=0,
     prehook=None,
     posthook=None,
+    print_stack=False,
+    print_memory=False,
 ) -> None:
     """
     Executes code in a fresh context.
@@ -41,7 +43,11 @@ def run(
 
         if verbose:
             print(f"{instruction} @ pc={pc_before}")
-            print(f"stack: [{', '.join(hex(x) for x in context.stack.stack)}]")
+            if print_stack:
+                print(f"stack: {' '.join(hex(x)[2:] for x in reversed(context.stack.stack))}")
+            if print_memory:
+                print(f"memory: [{' '.join(hex(x)[2:] for x in context.memory.memory)}]")
+
             print()
 
     if verbose:
