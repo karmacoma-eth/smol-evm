@@ -1,4 +1,4 @@
-from smol_evm.opcodes import assemble, PUSH1, RETURN, MLOAD, MSTORE8, MSIZE
+from smol_evm.opcodes import assemble, PUSH1, PUSH16, RETURN, MLOAD, MSTORE, MSTORE8, MSIZE
 from smol_evm.memory import Memory, InvalidMemoryAccess, InvalidMemoryValue
 from smol_evm.runner import run
 
@@ -110,3 +110,19 @@ def test_msize_incremented_on_mload():
 
     ret = run(code)
     assert int.from_bytes(ret, 'big') == 64
+
+def test_mstore_mload_reflexivity():
+    code = assemble(
+    [
+        PUSH16, 0x00112233445566778899aabbccddeeff,
+        PUSH1, 0,
+        MSTORE,
+        PUSH1, 0,
+        MLOAD,
+        PUSH1, 32,
+        PUSH1, 0,
+        RETURN
+    ])
+
+    ret = run(code)
+    assert int.from_bytes(ret, 'big') == 0x00112233445566778899aabbccddeeff
