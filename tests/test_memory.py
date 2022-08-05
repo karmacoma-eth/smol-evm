@@ -114,7 +114,7 @@ def test_msize_incremented_on_mload():
 def test_mstore_mload_reflexivity():
     code = assemble(
     [
-        PUSH16, 0x00112233445566778899aabbccddeeff,
+        PUSH16, 0xff112233445566778899aabbccddeeff,
         PUSH1, 0,
         MSTORE,
         PUSH1, 0,
@@ -125,4 +125,4 @@ def test_mstore_mload_reflexivity():
     ])
 
     ret = run(code)
-    assert int.from_bytes(ret, 'big') == 0x00112233445566778899aabbccddeeff
+    assert int.from_bytes(ret, 'big') == 0xff112233445566778899aabbccddeeff
