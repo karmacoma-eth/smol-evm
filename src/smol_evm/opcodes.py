@@ -90,6 +90,40 @@ SUB = instruction(
     "SUB",
     execute_SUB,
 )
+DIV = instruction(
+    0x04,
+    "DIV",
+    (lambda ctx: ctx.stack.push((ctx.stack.pop() // ctx.stack.pop()) % 2 ** 256))
+)
+
+# SDIV
+
+MOD = instruction(
+    0x06,
+    "MOD",
+    (lambda ctx: ctx.stack.push((ctx.stack.pop() % ctx.stack.pop() % 2 ** 256)))
+)
+
+# SMOD
+
+ADDMOD = instruction(
+    0x08,
+    "ADDMOD",
+    (lambda ctx: ctx.stack.push(((ctx.stack.pop() + ctx.stack.pop()) % ctx.stack.pop()) % 2 ** 256))
+)
+
+MULMOD = instruction(
+    0x09,
+    "ADDMOD",
+    (lambda ctx: ctx.stack.push(((ctx.stack.pop() * ctx.stack.pop()) % ctx.stack.pop()) % 2 ** 256))
+)
+
+EXP = instruction(
+    0x0A,
+    "EXP",
+    (lambda ctx: ctx.stack.push((ctx.stack.pop() ** ctx.stack.pop()) % 2 ** 256))
+)
+
 LT = instruction(0x10, "LT", execute_LT)
 GT = instruction(0x11, "GT", execute_GT)
 EQ = instruction(
