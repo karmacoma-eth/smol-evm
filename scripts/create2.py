@@ -8,6 +8,10 @@ import random
 import sys
 
 
+def hexlify(x: int) -> str:
+    return '0x' + hex(x)[2:].zfill(64)
+
+
 def init_pool_processes(the_shutdown_event):
     """
     Initialize each process with the global shutdown event
@@ -20,7 +24,7 @@ def _create2(deployer, salt_hexstr, hashed_bytecode):
     addr_hexbytes = Web3.keccak(
         hexstr=("ff" + deployer + salt_hexstr + hashed_bytecode)
     )
-    addr = Web3.toHex(addr_hexbytes)[-40:]
+    addr = Web3.toChecksumAddress(Web3.toHex(addr_hexbytes)[-40:])
     return addr
 
 
@@ -44,21 +48,23 @@ class Create2Searcher:
     def search(self, starting_salt=0):
         predicate = eval(self.predicate_str)
         salt = starting_salt
-        print("Starting search with salt:", hex(salt)[2:].zfill(64))
+        print("Starting search with salt:", hexlify(salt))
         while True:
-            salt_hexstr = hex(salt)[2:].zfill(64)
-            addr = _create2(self.deployer_addr, salt_hexstr, self.hashed_bytecode)
-            salt += 1
+            addr = _create2(self.deployer_addr, hexlify(salt)[2:],
+                            self.hashed_bytecode)
 
-            if predicate(addr):
+            if predicate(addr.lower()):
                 print(
-                    f"\nFound a match! Deploying with salt={salt} to get address {addr}"
+                    f"\nFound a match! Deploying with salt={hexlify(salt)} to get address {addr}"
                 )
                 shutdown_event.set()
 
             if (salt % 10000) == 0 and shutdown_event.is_set():
-                print(f"Stopped searching after {salt - starting_salt} attempts")
+                print(
+                    f"Stopped searching after {salt - starting_salt} attempts")
                 break
+
+            salt += 1
 
 
 def main():
@@ -84,7 +90,9 @@ Another predicate that may be useful: 'lambda addr: addr.startswith(\"0\" * 8)'
     bytecode = sys.argv[3]
 
     try:
-        salt = int(sys.argv[2])
+        salt_str = sys.argv[2]
+        salt = int(salt_str, 16) if salt_str.startswith(
+            "0x") else int(salt_str)
         print(create2(deployer_addr, salt, bytecode))
         sys.exit(0)
     except ValueError:
