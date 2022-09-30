@@ -3,6 +3,7 @@ from typing import Sequence, Union
 
 from .context import ExecutionContext
 from .exceptions import InvalidCodeOffset, UnknownOpcode, InvalidJumpDestination
+from .constants import MAX_UINT256
 
 
 class Instruction:
@@ -93,7 +94,7 @@ SUB = instruction(
 DIV = instruction(
     0x04,
     "DIV",
-    (lambda ctx: ctx.stack.push((ctx.stack.pop() // ctx.stack.pop()) % 2 ** 256))
+    (lambda ctx: ctx.stack.push((ctx.stack.pop() // ctx.stack.pop()) % 2 ** 256)),
 )
 
 # SDIV
@@ -101,7 +102,7 @@ DIV = instruction(
 MOD = instruction(
     0x06,
     "MOD",
-    (lambda ctx: ctx.stack.push((ctx.stack.pop() % ctx.stack.pop() % 2 ** 256)))
+    (lambda ctx: ctx.stack.push((ctx.stack.pop() % ctx.stack.pop() % 2 ** 256))),
 )
 
 # SMOD
@@ -109,19 +110,27 @@ MOD = instruction(
 ADDMOD = instruction(
     0x08,
     "ADDMOD",
-    (lambda ctx: ctx.stack.push(((ctx.stack.pop() + ctx.stack.pop()) % ctx.stack.pop()) % 2 ** 256))
+    (
+        lambda ctx: ctx.stack.push(
+            ((ctx.stack.pop() + ctx.stack.pop()) % ctx.stack.pop()) % 2 ** 256
+        )
+    ),
 )
 
 MULMOD = instruction(
     0x09,
     "ADDMOD",
-    (lambda ctx: ctx.stack.push(((ctx.stack.pop() * ctx.stack.pop()) % ctx.stack.pop()) % 2 ** 256))
+    (
+        lambda ctx: ctx.stack.push(
+            ((ctx.stack.pop() * ctx.stack.pop()) % ctx.stack.pop()) % 2 ** 256
+        )
+    ),
 )
 
 EXP = instruction(
     0x0A,
     "EXP",
-    (lambda ctx: ctx.stack.push((ctx.stack.pop() ** ctx.stack.pop()) % 2 ** 256))
+    (lambda ctx: ctx.stack.push((ctx.stack.pop() ** ctx.stack.pop()) % 2 ** 256)),
 )
 
 LT = instruction(0x10, "LT", execute_LT)
@@ -131,6 +140,19 @@ EQ = instruction(
     "EQ",
     lambda ctx: ctx.stack.push(1 if ctx.stack.pop() == ctx.stack.pop() else 0),
 )
+AND = instruction(
+    0x16, "AND", (lambda ctx: ctx.stack.push((ctx.stack.pop() & ctx.stack.pop())))
+)
+OR = instruction(
+    0x17, "OR", (lambda ctx: ctx.stack.push((ctx.stack.pop() | ctx.stack.pop())))
+)
+XOR = instruction(
+    0x18, "XOR", (lambda ctx: ctx.stack.push((ctx.stack.pop() ^ ctx.stack.pop())))
+)
+NOT = instruction(
+    0x19, "NOT", (lambda ctx: ctx.stack.push(MAX_UINT256 ^ ctx.stack.pop()))
+)
+
 SHR = instruction(
     0x1C,
     "SHR",
