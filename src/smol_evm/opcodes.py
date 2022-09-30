@@ -78,6 +78,11 @@ def execute_SHR(ctx: ExecutionContext) -> None:
     a, b = ctx.stack.pop(), ctx.stack.pop()
     ctx.stack.push(b >> a)
 
+def execute_CALLDATACOPY(ctx: ExecutionContext) -> None:
+    dest_offset,offset,size = ctx.stack.pop(),ctx.stack.pop(),ctx.stack.pop()
+    for pos in range((size / 32).__ceil__()):
+        ctx.memory.store_word(dest_offset + pos * 32,ctx.calldata.read_word(offset + pos * 32))
+
 
 STOP = instruction(0x00, "STOP", (lambda ctx: ctx.stop()))
 ADD = instruction(
@@ -166,6 +171,11 @@ CALLDATASIZE = instruction(
     0x36,
     "CALLDATASIZE",
     lambda ctx: ctx.stack.push(len(ctx.calldata)),
+)
+CALLDATACOPY = instruction(
+    0x37,
+    "CALLDATACOPY",
+    execute_CALLDATACOPY,
 )
 POP = instruction(
     0x50,
