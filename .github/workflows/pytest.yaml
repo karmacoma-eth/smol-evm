@@ -2,7 +2,8 @@ name: pytest
 
 on:
   pull_request:
-    branches: [ "*" ]
+    branches:
+      - "*"
 
 jobs:
   pytest:
