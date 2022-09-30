@@ -127,6 +127,3 @@ def test_mstore_mload_reflexivity():
     ret = run(code)
     assert int.from_bytes(ret, 'big') == 0xff112233445566778899aabbccddeeff
 
-
-def test_failing():
-    assert False
