@@ -8,25 +8,18 @@ jobs:
     steps:
       - name: Checkout Code Repository
         uses: actions/checkout@v3
+
+      - name: Install poetry
+        run: pipx install poetry
+
       - name: Setup Python
         uses: actions/setup-python@v4
         with:
           python-version: "3.10"
-      - name: Setup Poetry
-        uses: abatilo/actions-poetry@v2
-        with:
-          poetry-version: "1.2"
+          cache: "poetry"
+
       - name: Install dependencies
         run: poetry install
 
-      - uses: actions/cache@v3
-        name: Cache dependencies
-        with:
-          path: |
-            ~/.cache/pip
-            ~/.cache/pypoetry/virtualenvs
-            ~/.cache/pypoetry/cache
-            ~/.cache/pypoetry/artifacts
-          key: ${{ hashFiles('poetry.lock') }}
       - name: Run pytest
         run: poetry run pytest
