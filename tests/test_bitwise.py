@@ -36,6 +36,11 @@ def test_shl_max(context):
     assert context.stack.pop() == (2 ** 256 - 1) - 1
 
 
+def test_shl_by_max(context):
+    SHL.execute(with_stack_contents(context, [2 ** 256 - 1, 2 ** 256 - 1]))
+    assert context.stack.pop() == 0
+
+
 def test_shr_simple(context):
     SHR.execute(with_stack_contents(context, [16, 1]))
     assert context.stack.pop() == 8
