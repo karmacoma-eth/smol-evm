@@ -3,15 +3,11 @@ name: pytest
 on:
   push:
     branches:
-      - "*"
+      - "**"
 
 jobs:
   pytest:
     runs-on: ubuntu-latest
-
-    strategy:
-      fail-fast: false
-
     steps:
       - name: Checkout Code Repository
         uses: actions/checkout@v2
