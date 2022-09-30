@@ -71,7 +71,7 @@ def execute_GT(ctx: ExecutionContext) -> None:
 
 def execute_SHL(ctx: ExecutionContext) -> None:
     a, b = ctx.stack.pop(), ctx.stack.pop()
-    ctx.stack.push((b << a) % 2 ** 256)
+    ctx.stack.push(0 if a >= 256 else ((b << a) % 2 ** 256))
 
 
 def execute_SHR(ctx: ExecutionContext) -> None:
