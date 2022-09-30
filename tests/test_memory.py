@@ -129,4 +129,4 @@ def test_mstore_mload_reflexivity():
 
 
 def test_failing():
-    assert True
+    assert False
