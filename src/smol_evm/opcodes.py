@@ -69,6 +69,11 @@ def execute_GT(ctx: ExecutionContext) -> None:
     ctx.stack.push(1 if a > b else 0)
 
 
+def execute_SHL(ctx: ExecutionContext) -> None:
+    a, b = ctx.stack.pop(), ctx.stack.pop()
+    ctx.stack.push((b << a) % 2 ** 256)
+
+
 def execute_SHR(ctx: ExecutionContext) -> None:
     a, b = ctx.stack.pop(), ctx.stack.pop()
     ctx.stack.push(b >> a)
@@ -130,6 +135,11 @@ EQ = instruction(
     0x14,
     "EQ",
     lambda ctx: ctx.stack.push(1 if ctx.stack.pop() == ctx.stack.pop() else 0),
+)
+SHL = instruction(
+    0x1B,
+    "SHL",
+    execute_SHL,
 )
 SHR = instruction(
     0x1C,
