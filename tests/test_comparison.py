@@ -1,6 +1,6 @@
 from smol_evm.constants import MAX_UINT256
 from smol_evm.context import ExecutionContext
-from smol_evm.opcodes import LT, GT, EQ, ISZERO
+from smol_evm.opcodes import LT, GT, SLT, SGT, EQ, ISZERO, uint_to_int, int_to_uint
 
 import pytest
 
@@ -24,6 +24,32 @@ def test_gt_equal(context):
 
 def test_gt_simple(context):
     GT.execute(with_stack_contents(context, [0, 1]))
+    assert context.stack.pop() == 1
+
+def test_slt_equal(context):
+    SLT.execute(with_stack_contents(context, [int_to_uint(-1), int_to_uint(-1)]))
+    assert context.stack.pop() == 0
+
+def test_slt_simple(context):
+    SLT.execute(with_stack_contents(context, [10, int_to_uint(-1)]))
+    assert context.stack.pop() == 1
+
+def test_slt_extreme(context):
+    # MAX_UINT256 is -1
+    SLT.execute(with_stack_contents(context, [10, MAX_UINT256]))
+    assert context.stack.pop() == 1
+
+def test_sgt_equal(context):
+    SGT.execute(with_stack_contents(context, [1, 1]))
+    assert context.stack.pop() == 0
+
+def test_sgt_simple(context):
+    SGT.execute(with_stack_contents(context, [int_to_uint(-5), 10]))
+    assert context.stack.pop() == 1
+
+def test_sgt_extreme(context):
+    # MAX_UINT256 is -1
+    SGT.execute(with_stack_contents(context, [MAX_UINT256, 10]))
     assert context.stack.pop() == 1
 
 def test_eq_simple(context):
