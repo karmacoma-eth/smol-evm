@@ -3,6 +3,7 @@ from typing import Sequence, Union
 
 from .context import ExecutionContext
 from .exceptions import InvalidCodeOffset, UnknownOpcode, InvalidJumpDestination
+from .constants import HALF_UINT256
 
 
 class Instruction:
@@ -44,6 +45,15 @@ def _do_jump(ctx: ExecutionContext, target_pc: int) -> None:
     ctx.set_program_counter(target_pc)
 
 
+def sign(n: int) -> int:
+    if n == 0:
+        return 0
+    elif n < HALF_UINT256:
+        return 1
+    else:
+        return -1
+
+
 def execute_JUMP(ctx: ExecutionContext) -> None:
     _do_jump(ctx, ctx.stack.pop())
 
@@ -67,6 +77,32 @@ def execute_LT(ctx: ExecutionContext) -> None:
 def execute_GT(ctx: ExecutionContext) -> None:
     a, b = ctx.stack.pop(), ctx.stack.pop()
     ctx.stack.push(1 if a > b else 0)
+
+
+def execute_SLT(ctx: ExecutionContext) -> None:
+    a, b = ctx.stack.pop(), ctx.stack.pop()
+    sign_a, sign_b = sign(a), sign(b)
+    # a non neg, b neg
+    if sign_a >= 0 and sign_b < 0:
+        ctx.stack.push(0)
+    # a neg, b non neg
+    elif sign_a < 0 and sign_b >= 0:
+        ctx.stack.push(1)
+    else:
+        ctx.stack.push(1 if a < b else 0)
+
+
+def execute_SGT(ctx: ExecutionContext) -> None:
+    a, b = ctx.stack.pop(), ctx.stack.pop()
+    sign_a, sign_b = sign(a), sign(b)
+    # a non neg, b neg
+    if sign_a >= 0 and sign_b < 0:
+        ctx.stack.push(1)
+    # a neg, b non neg
+    elif sign_a < 0 and sign_b >= 0:
+        ctx.stack.push(0)
+    else:
+        ctx.stack.push(1 if a > b else 0)
 
 
 def execute_SHL(ctx: ExecutionContext) -> None:
@@ -136,6 +172,8 @@ EXP = instruction(
 
 LT = instruction(0x10, "LT", execute_LT)
 GT = instruction(0x11, "GT", execute_GT)
+SLT = instruction(0x12, "SLT", execute_SLT)
+SGT = instruction(0x13, "SGT", execute_SGT)
 EQ = instruction(
     0x14,
     "EQ",

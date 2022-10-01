@@ -1,6 +1,7 @@
 MAX_UINT256 = 2 ** 256 - 1
 MAX_UINT8 = 2 ** 8 - 1
 MAX_STACK_DEPTH = 1024
+HALF_UINT256 = 2 ** 256 // 2
 
 
 def is_valid_uint256(value: int) -> bool:
