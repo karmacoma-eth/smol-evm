@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from typing import Sequence, Union
+from eth_utils import keccak
 
 from .context import ExecutionContext
 from .exceptions import InvalidCodeOffset, UnknownOpcode, InvalidJumpDestination
@@ -67,6 +68,20 @@ def execute_LT(ctx: ExecutionContext) -> None:
 def execute_GT(ctx: ExecutionContext) -> None:
     a, b = ctx.stack.pop(), ctx.stack.pop()
     ctx.stack.push(1 if a > b else 0)
+
+
+def execute_BYTE(ctx: ExecutionContext) -> None:
+    offset, value = ctx.stack.pop(), ctx.stack.pop()
+    if offset < 32:
+        ctx.stack.push((value >> ((31 - offset) * 8)) & 0xFF)
+    else:
+        ctx.stack.push(0)
+
+
+def execute_SHA3(ctx: ExecutionContext) -> None:
+    offset, size = ctx.stack.pop(), ctx.stack.pop()
+    content = ctx.memory.load_range(offset, size)
+    ctx.stack.push(int.from_bytes(keccak(content), "big"))
 
 
 def execute_SHL(ctx: ExecutionContext) -> None:
@@ -141,6 +156,7 @@ EQ = instruction(
     "EQ",
     lambda ctx: ctx.stack.push(1 if ctx.stack.pop() == ctx.stack.pop() else 0),
 )
+BYTE = instruction(0x1A, "BYTE", execute_BYTE)
 SHL = instruction(
     0x1B,
     "SHL",
@@ -156,6 +172,7 @@ ISZERO = instruction(
     "ISZERO",
     lambda ctx: ctx.stack.push(1 if ctx.stack.pop() == 0 else 0),
 )
+SHA3 = instruction(0x20, "SHA3", execute_SHA3)
 # TODO: placeholder for now
 CALLVALUE = instruction(
     0x34,
