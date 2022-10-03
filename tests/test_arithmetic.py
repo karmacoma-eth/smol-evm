@@ -1,6 +1,6 @@
 from smol_evm.constants import MAX_UINT256
 from smol_evm.context import ExecutionContext
-from smol_evm.opcodes import ADD, ADDMOD, DIV, EXP, MOD, MULMOD, SUB
+from smol_evm.opcodes import ADD, ADDMOD, DIV, SDIV, EXP, MOD, SMOD, MULMOD, SUB, uint_to_int, int_to_uint
 
 import pytest
 
@@ -50,6 +50,27 @@ def test_div_zero(context):
     DIV.execute(with_stack_contents(context, [MAX_UINT256, 0]))
     assert context.stack.pop() == 0    
 
+def test_sdiv_simple(context):
+    # NOTE: int(MAX_UINT256) is -1
+    # 20 / -2
+    SDIV.execute(with_stack_contents(context, [int_to_uint(-2), 20]))
+    assert context.stack.pop() == int_to_uint(-10)
+
+def test_sdiv_floor(context):
+    # -11 / -2
+    SDIV.execute(with_stack_contents(context, [int_to_uint(-2), int_to_uint(-11)]))
+    assert context.stack.pop() == 5
+
+def test_sdiv_EXTREME(context):
+    # -1 / 1
+    SDIV.execute(with_stack_contents(context, [1, MAX_UINT256]))
+    assert context.stack.pop() == int_to_uint(-1)
+
+def test_sdiv_zero(context):
+    # 0 / -1
+    SDIV.execute(with_stack_contents(context, [MAX_UINT256, 0]))
+    assert context.stack.pop() == 0    
+
 def test_mod_simple(context):
     MOD.execute(with_stack_contents(context, [2, 11]))
     assert context.stack.pop() == 1
@@ -60,6 +81,20 @@ def test_mod_zero(context):
 
 def test_mod_EXTREME(context):
     MOD.execute(with_stack_contents(context, [MAX_UINT256, MAX_UINT256]))
+    assert context.stack.pop() == 0
+
+def test_smod_simple(context):
+    # 11 % -2
+    SMOD.execute(with_stack_contents(context, [int_to_uint(-2), 11]))
+    assert context.stack.pop() == int_to_uint(-1)
+
+def test_smod_zero(context):
+    SMOD.execute(with_stack_contents(context, [int_to_uint(-11), 0]))
+    assert context.stack.pop() == 0
+
+def test_smod_EXTREME(context):
+    # -1 % -1 == 0
+    SMOD.execute(with_stack_contents(context, [MAX_UINT256, MAX_UINT256]))
     assert context.stack.pop() == 0
 
 def test_addmod_simple(context):
