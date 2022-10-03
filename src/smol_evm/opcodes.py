@@ -70,9 +70,19 @@ def execute_GT(ctx: ExecutionContext) -> None:
     ctx.stack.push(1 if a > b else 0)
 
 
+def execute_SHL(ctx: ExecutionContext) -> None:
+    a, b = ctx.stack.pop(), ctx.stack.pop()
+    ctx.stack.push(0 if a >= 256 else ((b << a) % 2 ** 256))
+
+
 def execute_SHR(ctx: ExecutionContext) -> None:
     a, b = ctx.stack.pop(), ctx.stack.pop()
     ctx.stack.push(b >> a)
+
+def execute_CALLDATACOPY(ctx: ExecutionContext) -> None:
+    dest_offset,offset,size = ctx.stack.pop(),ctx.stack.pop(),ctx.stack.pop()
+    for pos in range((size / 32).__ceil__()):
+        ctx.memory.store_word(dest_offset + pos * 32,ctx.calldata.read_word(offset + pos * 32))
 
 
 STOP = instruction(0x00, "STOP", (lambda ctx: ctx.stop()))
@@ -140,6 +150,11 @@ EQ = instruction(
     "EQ",
     lambda ctx: ctx.stack.push(1 if ctx.stack.pop() == ctx.stack.pop() else 0),
 )
+ISZERO = instruction(
+    0x15,
+    "ISZERO",
+    lambda ctx: ctx.stack.push(1 if ctx.stack.pop() == 0 else 0),
+)
 AND = instruction(
     0x16, "AND", (lambda ctx: ctx.stack.push((ctx.stack.pop() & ctx.stack.pop())))
 )
@@ -152,17 +167,17 @@ XOR = instruction(
 NOT = instruction(
     0x19, "NOT", (lambda ctx: ctx.stack.push(MAX_UINT256 ^ ctx.stack.pop()))
 )
-
+SHL = instruction(
+    0x1B,
+    "SHL",
+    execute_SHL,
+)
 SHR = instruction(
     0x1C,
     "SHR",
     execute_SHR,
 )
-ISZERO = instruction(
-    0x15,
-    "ISZERO",
-    lambda ctx: ctx.stack.push(1 if ctx.stack.pop() == 0 else 0),
-)
+
 # TODO: placeholder for now
 CALLVALUE = instruction(
     0x34,
@@ -178,6 +193,11 @@ CALLDATASIZE = instruction(
     0x36,
     "CALLDATASIZE",
     lambda ctx: ctx.stack.push(len(ctx.calldata)),
+)
+CALLDATACOPY = instruction(
+    0x37,
+    "CALLDATACOPY",
+    execute_CALLDATACOPY,
 )
 POP = instruction(
     0x50,

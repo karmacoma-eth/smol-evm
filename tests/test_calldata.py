@@ -1,6 +1,6 @@
 from smol_evm.constants import MAX_UINT256
 from smol_evm.context import ExecutionContext, Calldata
-from smol_evm.opcodes import CALLDATALOAD, CALLDATASIZE
+from smol_evm.opcodes import CALLDATALOAD, CALLDATASIZE , CALLDATACOPY,MLOAD
 from shared import with_stack_contents, with_calldata
 
 import pytest
@@ -41,3 +41,22 @@ def test_calldatasize_empty(context):
 def test_calldatasize_one(context):
     CALLDATASIZE.execute(with_calldata(context, [0]))
     assert context.stack.pop() == 1
+
+
+def test_calldataload(context):
+    ctx = with_calldata(context, bytearray.fromhex("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF11"))
+    ctx.stack.push(33)
+    ctx.stack.push(0)
+    ctx.stack.push(0)
+    CALLDATACOPY.execute(ctx)
+    # loading word from memory offset 0
+    context.stack.push(0)
+    MLOAD.execute(context)
+    assert context.stack.pop() == int("0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",16)
+    # loading word from memory offset 0x20 (32)
+    context.stack.push(32)
+    MLOAD.execute(context)
+    assert context.stack.pop() == int("0x1100000000000000000000000000000000000000000000000000000000000000",16)
+
+
+    
