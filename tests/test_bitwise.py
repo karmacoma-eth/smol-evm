@@ -1,6 +1,6 @@
 from smol_evm.constants import MAX_UINT256
 from smol_evm.context import ExecutionContext
-from smol_evm.opcodes import AND,OR,XOR,NOT,SHL,SHR
+from smol_evm.opcodes import AND,OR,XOR,NOT,SHL,SHR,BYTE
 
 import pytest
 
@@ -65,20 +65,48 @@ def test_shr_simple(context):
     SHR.execute(with_stack_contents(context, [16, 1]))
     assert context.stack.pop() == 8
 
+
 def test_shr_big(context):
     SHR.execute(with_stack_contents(context, [16, 5]))
     assert context.stack.pop() == 0
 
+
 def test_shr_by_zero(context):
     SHR.execute(with_stack_contents(context, [16, 0]))
     assert context.stack.pop() == 16
+
 
 def test_shr_non_power_of_two(context):
     SHR.execute(with_stack_contents(context, [15, 1]))
     assert context.stack.pop() == 7
 
 
-
 def test_shl_non_power_of_two(context):
     SHL.execute(with_stack_contents(context, [15, 1]))
     assert context.stack.pop() == 30
+
+
+def test_byte(context):
+    BYTE.execute(with_stack_contents(context, [0xABCDEF0908070605040302010000000000000000000000000000000000000000, 0]))
+    assert context.stack.pop() == 0xAB
+
+    BYTE.execute(with_stack_contents(context, [0xABCDEF0908070605040302010000000000000000000000000000000000000000, 1]))
+    assert context.stack.pop() == 0xCD
+
+    BYTE.execute(with_stack_contents(context, [0x00CDEF090807060504030201ffffffffffffffffffffffffffffffffffffffff, 0]))
+    assert context.stack.pop() == 0x00
+
+    BYTE.execute(with_stack_contents(context, [0x00CDEF090807060504030201ffffffffffffffffffffffffffffffffffffffff, 1]))
+    assert context.stack.pop() == 0xCD
+
+    BYTE.execute(with_stack_contents(context, [0x0000000000000000000000000000000000000000000000000000000000102030, 31]))
+    assert context.stack.pop() == 0x30
+
+    BYTE.execute(with_stack_contents(context, [0x0000000000000000000000000000000000000000000000000000000000102030, 30]))
+    assert context.stack.pop() == 0x20
+
+    BYTE.execute(with_stack_contents(context, [0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff, 32]))
+    assert context.stack.pop() == 0x00
+
+    BYTE.execute(with_stack_contents(context, [0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff, 255]))
+    assert context.stack.pop() == 0x00

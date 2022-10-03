@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from typing import Sequence, Union
+from eth_utils import keccak
 
 from .context import ExecutionContext
 from .exceptions import InvalidCodeOffset, UnknownOpcode, InvalidJumpDestination
@@ -89,6 +90,7 @@ def execute_GT(ctx: ExecutionContext) -> None:
     a, b = ctx.stack.pop(), ctx.stack.pop()
     ctx.stack.push(1 if a > b else 0)
 
+
 def execute_SLT(ctx: ExecutionContext) -> None:
     a, b = uint_to_int(ctx.stack.pop()), uint_to_int(ctx.stack.pop())
     ctx.stack.push(1 if a < b else 0)
@@ -97,7 +99,22 @@ def execute_SLT(ctx: ExecutionContext) -> None:
 def execute_SGT(ctx: ExecutionContext) -> None:
     a, b = uint_to_int(ctx.stack.pop()), uint_to_int(ctx.stack.pop())
     ctx.stack.push(1 if a > b else 0)
+
+
+def execute_BYTE(ctx: ExecutionContext) -> None:
+    offset, value = ctx.stack.pop(), ctx.stack.pop()
+    if offset < 32:
+        ctx.stack.push((value >> ((31 - offset) * 8)) & 0xFF)
+    else:
+        ctx.stack.push(0)
+
+
+def execute_SHA3(ctx: ExecutionContext) -> None:
+    offset, size = ctx.stack.pop(), ctx.stack.pop()
+    content = ctx.memory.load_range(offset, size)
+    ctx.stack.push(int.from_bytes(keccak(content), "big"))
     
+
 def execute_SHL(ctx: ExecutionContext) -> None:
     a, b = ctx.stack.pop(), ctx.stack.pop()
     ctx.stack.push(0 if a >= 256 else ((b << a) % 2 ** 256))
@@ -197,6 +214,7 @@ XOR = instruction(
 NOT = instruction(
     0x19, "NOT", (lambda ctx: ctx.stack.push(MAX_UINT256 ^ ctx.stack.pop()))
 )
+BYTE = instruction(0x1A, "BYTE", execute_BYTE)
 SHL = instruction(
     0x1B,
     "SHL",
@@ -207,6 +225,7 @@ SHR = instruction(
     "SHR",
     execute_SHR,
 )
+SHA3 = instruction(0x20, "SHA3", execute_SHA3)
 
 # TODO: placeholder for now
 CALLVALUE = instruction(
