@@ -5,6 +5,7 @@ from .context import ExecutionContext
 from .exceptions import InvalidCodeOffset, UnknownOpcode, InvalidJumpDestination
 from .constants import MAX_UINT256
 
+
 class Instruction:
     def __init__(self, opcode: int, name: str):
         self.opcode = opcode
@@ -53,6 +54,17 @@ def _do_jump(ctx: ExecutionContext, target_pc: int) -> None:
     ctx.set_program_counter(target_pc)
 
 
+def uint_to_int(n):
+    if (n >> 255) != 0:
+        return -(MAX_UINT256 + 1 - (n & MAX_UINT256))
+    return (n & MAX_UINT256)
+
+def int_to_uint(n):
+    if n < 0:
+        n = (MAX_UINT256 + n + 1)
+    return (n & MAX_UINT256)
+
+
 def execute_JUMP(ctx: ExecutionContext) -> None:
     _do_jump(ctx, ctx.stack.pop())
 
@@ -65,7 +77,7 @@ def execute_JUMPI(ctx: ExecutionContext) -> None:
 
 def execute_SUB(ctx: ExecutionContext) -> None:
     a, b = ctx.stack.pop(), ctx.stack.pop()
-    ctx.stack.push((a - b) % 2 ** 256)
+    ctx.stack.push((a - b) & MAX_UINT256)
 
 
 def execute_LT(ctx: ExecutionContext) -> None:
@@ -95,6 +107,7 @@ def execute_SHR(ctx: ExecutionContext) -> None:
     a, b = ctx.stack.pop(), ctx.stack.pop()
     ctx.stack.push(b >> a)
 
+
 def execute_CALLDATACOPY(ctx: ExecutionContext) -> None:
     dest_offset,offset,size = ctx.stack.pop(),ctx.stack.pop(),ctx.stack.pop()
     for pos in range((size / 32).__ceil__()):
@@ -105,12 +118,12 @@ STOP = instruction(0x00, "STOP", (lambda ctx: ctx.stop()))
 ADD = instruction(
     0x01,
     "ADD",
-    (lambda ctx: ctx.stack.push((ctx.stack.pop() + ctx.stack.pop()) % 2 ** 256)),
+    (lambda ctx: ctx.stack.push((ctx.stack.pop() + ctx.stack.pop()) & MAX_UINT256)),
 )
 MUL = instruction(
     0x02,
     "MUL",
-    (lambda ctx: ctx.stack.push((ctx.stack.pop() * ctx.stack.pop()) % 2 ** 256)),
+    (lambda ctx: ctx.stack.push((ctx.stack.pop() * ctx.stack.pop()) & MAX_UINT256)),
 )
 SUB = instruction(
     0x03,
@@ -120,35 +133,42 @@ SUB = instruction(
 DIV = instruction(
     0x04,
     "DIV",
-    (lambda ctx: ctx.stack.push((ctx.stack.pop() // ctx.stack.pop()) % 2 ** 256))
+    (lambda ctx: ctx.stack.push((ctx.stack.pop() // ctx.stack.pop()) & MAX_UINT256))
 )
-
-# SDIV
+SDIV = instruction(
+    0x05,
+    "SDIV",
+    (lambda ctx: ctx.stack.push(int_to_uint(uint_to_int(ctx.stack.pop()) // uint_to_int(ctx.stack.pop()))))
+)
 
 MOD = instruction(
     0x06,
     "MOD",
-    (lambda ctx: ctx.stack.push((ctx.stack.pop() % ctx.stack.pop() % 2 ** 256)))
+    (lambda ctx: ctx.stack.push((ctx.stack.pop() % ctx.stack.pop() & MAX_UINT256)))
 )
 
-# SMOD
+SMOD = instruction(
+    0x07,
+    "SMOD",
+    (lambda ctx: ctx.stack.push(int_to_uint(uint_to_int(ctx.stack.pop()) % uint_to_int(ctx.stack.pop()))))
+)
 
 ADDMOD = instruction(
     0x08,
     "ADDMOD",
-    (lambda ctx: ctx.stack.push(((ctx.stack.pop() + ctx.stack.pop()) % ctx.stack.pop()) % 2 ** 256))
+    (lambda ctx: ctx.stack.push(((ctx.stack.pop() + ctx.stack.pop()) % ctx.stack.pop()) & MAX_UINT256))
 )
 
 MULMOD = instruction(
     0x09,
-    "ADDMOD",
-    (lambda ctx: ctx.stack.push(((ctx.stack.pop() * ctx.stack.pop()) % ctx.stack.pop()) % 2 ** 256))
+    "MULMOD",
+    (lambda ctx: ctx.stack.push(((ctx.stack.pop() * ctx.stack.pop()) % ctx.stack.pop()) & MAX_UINT256))
 )
 
 EXP = instruction(
     0x0A,
     "EXP",
-    (lambda ctx: ctx.stack.push((ctx.stack.pop() ** ctx.stack.pop()) % 2 ** 256))
+    (lambda ctx: ctx.stack.push((ctx.stack.pop() ** ctx.stack.pop()) & MAX_UINT256))
 )
 
 LT = instruction(0x10, "LT", execute_LT)
@@ -160,6 +180,23 @@ EQ = instruction(
     "EQ",
     lambda ctx: ctx.stack.push(1 if ctx.stack.pop() == ctx.stack.pop() else 0),
 )
+ISZERO = instruction(
+    0x15,
+    "ISZERO",
+    lambda ctx: ctx.stack.push(1 if ctx.stack.pop() == 0 else 0),
+)
+AND = instruction(
+    0x16, "AND", (lambda ctx: ctx.stack.push((ctx.stack.pop() & ctx.stack.pop())))
+)
+OR = instruction(
+    0x17, "OR", (lambda ctx: ctx.stack.push((ctx.stack.pop() | ctx.stack.pop())))
+)
+XOR = instruction(
+    0x18, "XOR", (lambda ctx: ctx.stack.push((ctx.stack.pop() ^ ctx.stack.pop())))
+)
+NOT = instruction(
+    0x19, "NOT", (lambda ctx: ctx.stack.push(MAX_UINT256 ^ ctx.stack.pop()))
+)
 SHL = instruction(
     0x1B,
     "SHL",
@@ -170,11 +207,7 @@ SHR = instruction(
     "SHR",
     execute_SHR,
 )
-ISZERO = instruction(
-    0x15,
-    "ISZERO",
-    lambda ctx: ctx.stack.push(1 if ctx.stack.pop() == 0 else 0),
-)
+
 # TODO: placeholder for now
 CALLVALUE = instruction(
     0x34,
