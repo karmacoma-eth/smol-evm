@@ -3,6 +3,7 @@ from typing import Sequence, Union
 
 from .context import ExecutionContext
 from .exceptions import InvalidCodeOffset, UnknownOpcode, InvalidJumpDestination
+from .constants import MAX_UINT256
 
 from .constants import MAX_UINT256
 
@@ -83,12 +84,18 @@ def execute_GT(ctx: ExecutionContext) -> None:
 
 def execute_SHL(ctx: ExecutionContext) -> None:
     a, b = ctx.stack.pop(), ctx.stack.pop()
-    ctx.stack.push(b << a)
+    ctx.stack.push(0 if a >= 256 else ((b << a) % 2 ** 256))
 
 
 def execute_SHR(ctx: ExecutionContext) -> None:
     a, b = ctx.stack.pop(), ctx.stack.pop()
     ctx.stack.push(b >> a)
+
+
+def execute_CALLDATACOPY(ctx: ExecutionContext) -> None:
+    dest_offset,offset,size = ctx.stack.pop(),ctx.stack.pop(),ctx.stack.pop()
+    for pos in range((size / 32).__ceil__()):
+        ctx.memory.store_word(dest_offset + pos * 32,ctx.calldata.read_word(offset + pos * 32))
 
 
 STOP = instruction(0x00, "STOP", (lambda ctx: ctx.stop()))
@@ -138,7 +145,7 @@ ADDMOD = instruction(
 
 MULMOD = instruction(
     0x09,
-    "ADDMOD",
+    "MULMOD",
     (lambda ctx: ctx.stack.push(((ctx.stack.pop() * ctx.stack.pop()) % ctx.stack.pop()) & MAX_UINT256))
 )
 
@@ -155,6 +162,23 @@ EQ = instruction(
     "EQ",
     lambda ctx: ctx.stack.push(1 if ctx.stack.pop() == ctx.stack.pop() else 0),
 )
+ISZERO = instruction(
+    0x15,
+    "ISZERO",
+    lambda ctx: ctx.stack.push(1 if ctx.stack.pop() == 0 else 0),
+)
+AND = instruction(
+    0x16, "AND", (lambda ctx: ctx.stack.push((ctx.stack.pop() & ctx.stack.pop())))
+)
+OR = instruction(
+    0x17, "OR", (lambda ctx: ctx.stack.push((ctx.stack.pop() | ctx.stack.pop())))
+)
+XOR = instruction(
+    0x18, "XOR", (lambda ctx: ctx.stack.push((ctx.stack.pop() ^ ctx.stack.pop())))
+)
+NOT = instruction(
+    0x19, "NOT", (lambda ctx: ctx.stack.push(MAX_UINT256 ^ ctx.stack.pop()))
+)
 SHL = instruction(
     0x1B,
     "SHL",
@@ -165,11 +189,7 @@ SHR = instruction(
     "SHR",
     execute_SHR,
 )
-ISZERO = instruction(
-    0x15,
-    "ISZERO",
-    lambda ctx: ctx.stack.push(1 if ctx.stack.pop() == 0 else 0),
-)
+
 # TODO: placeholder for now
 CALLVALUE = instruction(
     0x34,
@@ -185,6 +205,11 @@ CALLDATASIZE = instruction(
     0x36,
     "CALLDATASIZE",
     lambda ctx: ctx.stack.push(len(ctx.calldata)),
+)
+CALLDATACOPY = instruction(
+    0x37,
+    "CALLDATACOPY",
+    execute_CALLDATACOPY,
 )
 POP = instruction(
     0x50,
