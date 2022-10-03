@@ -117,6 +117,14 @@ def execute_SHR(ctx: ExecutionContext) -> None:
     ctx.stack.push(b >> a)
 
 
+def execute_SAR(ctx: ExecutionContext) -> None:
+    a, b = ctx.stack.pop(), ctx.stack.pop()
+    if uint_to_int(b) < 0 : 
+        ctx.stack.push(b >> a | int( '1' * a, 2) << 256 - a)
+    else : 
+        ctx.stack.push(b >> a)
+
+
 def execute_CALLDATACOPY(ctx: ExecutionContext) -> None:
     dest_offset, offset, size = ctx.stack.pop(), ctx.stack.pop(), ctx.stack.pop()
     for pos in range((size / 32).__ceil__()):
@@ -234,6 +242,11 @@ SHR = instruction(
     0x1C,
     "SHR",
     execute_SHR,
+)
+SAR = instruction(
+    0x1D,
+    "SAR",
+    execute_SAR,
 )
 SHA3 = instruction(0x20, "SHA3", execute_SHA3)
 
