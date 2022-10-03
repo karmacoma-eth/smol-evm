@@ -76,3 +76,9 @@ def test_shr_by_zero(context):
 def test_shr_non_power_of_two(context):
     SHR.execute(with_stack_contents(context, [15, 1]))
     assert context.stack.pop() == 7
+
+
+
+def test_shl_non_power_of_two(context):
+    SHL.execute(with_stack_contents(context, [15, 1]))
+    assert context.stack.pop() == 30
