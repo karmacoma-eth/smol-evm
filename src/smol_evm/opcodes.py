@@ -5,7 +5,6 @@ from .context import ExecutionContext
 from .exceptions import InvalidCodeOffset, UnknownOpcode, InvalidJumpDestination
 from .constants import MAX_UINT256
 
-from .constants import MAX_UINT256
 
 class Instruction:
     def __init__(self, opcode: int, name: str):
@@ -39,6 +38,15 @@ def instruction(opcode: int, name: str, execute_func: callable):
 
     return instruction
 
+def uint_to_int(n):
+    if (n >> 255) != 0:
+        return -(MAX_UINT256 + 1 - (n & MAX_UINT256))
+    return n & MAX_UINT256
+
+def int_to_uint(n):
+    if n < 0:
+        n = MAX_UINT256 + n + 1
+    return n & MAX_UINT256
 
 def _do_jump(ctx: ExecutionContext, target_pc: int) -> None:
     if target_pc not in ctx.jumpdests:
@@ -81,7 +89,15 @@ def execute_GT(ctx: ExecutionContext) -> None:
     a, b = ctx.stack.pop(), ctx.stack.pop()
     ctx.stack.push(1 if a > b else 0)
 
+def execute_SLT(ctx: ExecutionContext) -> None:
+    a, b = uint_to_int(ctx.stack.pop()), uint_to_int(ctx.stack.pop())
+    ctx.stack.push(1 if a < b else 0)
 
+
+def execute_SGT(ctx: ExecutionContext) -> None:
+    a, b = uint_to_int(ctx.stack.pop()), uint_to_int(ctx.stack.pop())
+    ctx.stack.push(1 if a > b else 0)
+    
 def execute_SHL(ctx: ExecutionContext) -> None:
     a, b = ctx.stack.pop(), ctx.stack.pop()
     ctx.stack.push(0 if a >= 256 else ((b << a) % 2 ** 256))
@@ -157,6 +173,8 @@ EXP = instruction(
 
 LT = instruction(0x10, "LT", execute_LT)
 GT = instruction(0x11, "GT", execute_GT)
+SLT = instruction(0x12, "SLT", execute_SLT)
+SGT = instruction(0x13, "SGT", execute_SGT)
 EQ = instruction(
     0x14,
     "EQ",
