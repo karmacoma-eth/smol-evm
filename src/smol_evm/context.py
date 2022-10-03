@@ -6,8 +6,10 @@ from .stack import Stack
 class InvalidCalldataAccess(Exception):
     ...
 
+
 class InvalidStorageSlot(Exception):
     ...
+
 
 class InvalidStorageValue(Exception):
     ...
@@ -89,7 +91,8 @@ class ExecutionContext:
     def __repr__(self) -> str:
         return str(self)
 
-class Storage():
+
+class Storage:
     def __init__(self, init=dict()) -> None:
         self.data = init
 
@@ -116,7 +119,7 @@ class AccountState:
         self.code = code
 
     def is_empty(self):
-        return self.nonce == 0 and self.balance == 0 and self.code == b''
+        return self.nonce == 0 and self.balance == 0 and self.code == b""
 
     def __str__(self):
         return f"nonce: {self.nonce}, balance: {self.balance}, code: {self.code}, storage: {self.storage}"
