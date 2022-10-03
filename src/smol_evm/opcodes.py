@@ -39,15 +39,6 @@ def instruction(opcode: int, name: str, execute_func: callable):
 
     return instruction
 
-def uint_to_int(n):
-    if (n >> 255) != 0:
-        return -(MAX_UINT256 + 1 - (n & MAX_UINT256))
-    return n & MAX_UINT256
-
-def int_to_uint(n):
-    if n < 0:
-        n = MAX_UINT256 + n + 1
-    return n & MAX_UINT256
 
 def _do_jump(ctx: ExecutionContext, target_pc: int) -> None:
     if target_pc not in ctx.jumpdests:
@@ -58,12 +49,13 @@ def _do_jump(ctx: ExecutionContext, target_pc: int) -> None:
 def uint_to_int(n):
     if (n >> 255) != 0:
         return -(MAX_UINT256 + 1 - (n & MAX_UINT256))
-    return (n & MAX_UINT256)
+    return n & MAX_UINT256
+
 
 def int_to_uint(n):
     if n < 0:
-        n = (MAX_UINT256 + n + 1)
-    return (n & MAX_UINT256)
+        n = MAX_UINT256 + n + 1
+    return n & MAX_UINT256
 
 
 def execute_JUMP(ctx: ExecutionContext) -> None:
@@ -113,7 +105,7 @@ def execute_SHA3(ctx: ExecutionContext) -> None:
     offset, size = ctx.stack.pop(), ctx.stack.pop()
     content = ctx.memory.load_range(offset, size)
     ctx.stack.push(int.from_bytes(keccak(content), "big"))
-    
+
 
 def execute_SHL(ctx: ExecutionContext) -> None:
     a, b = ctx.stack.pop(), ctx.stack.pop()
@@ -126,9 +118,11 @@ def execute_SHR(ctx: ExecutionContext) -> None:
 
 
 def execute_CALLDATACOPY(ctx: ExecutionContext) -> None:
-    dest_offset,offset,size = ctx.stack.pop(),ctx.stack.pop(),ctx.stack.pop()
+    dest_offset, offset, size = ctx.stack.pop(), ctx.stack.pop(), ctx.stack.pop()
     for pos in range((size / 32).__ceil__()):
-        ctx.memory.store_word(dest_offset + pos * 32,ctx.calldata.read_word(offset + pos * 32))
+        ctx.memory.store_word(
+            dest_offset + pos * 32, ctx.calldata.read_word(offset + pos * 32)
+        )
 
 
 STOP = instruction(0x00, "STOP", (lambda ctx: ctx.stop()))
@@ -150,42 +144,58 @@ SUB = instruction(
 DIV = instruction(
     0x04,
     "DIV",
-    (lambda ctx: ctx.stack.push((ctx.stack.pop() // ctx.stack.pop()) & MAX_UINT256))
+    (lambda ctx: ctx.stack.push((ctx.stack.pop() // ctx.stack.pop()) & MAX_UINT256)),
 )
 SDIV = instruction(
     0x05,
     "SDIV",
-    (lambda ctx: ctx.stack.push(int_to_uint(uint_to_int(ctx.stack.pop()) // uint_to_int(ctx.stack.pop()))))
+    (
+        lambda ctx: ctx.stack.push(
+            int_to_uint(uint_to_int(ctx.stack.pop()) // uint_to_int(ctx.stack.pop()))
+        )
+    ),
 )
 
 MOD = instruction(
     0x06,
     "MOD",
-    (lambda ctx: ctx.stack.push((ctx.stack.pop() % ctx.stack.pop() & MAX_UINT256)))
+    (lambda ctx: ctx.stack.push((ctx.stack.pop() % ctx.stack.pop() & MAX_UINT256))),
 )
 
 SMOD = instruction(
     0x07,
     "SMOD",
-    (lambda ctx: ctx.stack.push(int_to_uint(uint_to_int(ctx.stack.pop()) % uint_to_int(ctx.stack.pop()))))
+    (
+        lambda ctx: ctx.stack.push(
+            int_to_uint(uint_to_int(ctx.stack.pop()) % uint_to_int(ctx.stack.pop()))
+        )
+    ),
 )
 
 ADDMOD = instruction(
     0x08,
     "ADDMOD",
-    (lambda ctx: ctx.stack.push(((ctx.stack.pop() + ctx.stack.pop()) % ctx.stack.pop()) & MAX_UINT256))
+    (
+        lambda ctx: ctx.stack.push(
+            ((ctx.stack.pop() + ctx.stack.pop()) % ctx.stack.pop()) & MAX_UINT256
+        )
+    ),
 )
 
 MULMOD = instruction(
     0x09,
     "MULMOD",
-    (lambda ctx: ctx.stack.push(((ctx.stack.pop() * ctx.stack.pop()) % ctx.stack.pop()) & MAX_UINT256))
+    (
+        lambda ctx: ctx.stack.push(
+            ((ctx.stack.pop() * ctx.stack.pop()) % ctx.stack.pop()) & MAX_UINT256
+        )
+    ),
 )
 
 EXP = instruction(
     0x0A,
     "EXP",
-    (lambda ctx: ctx.stack.push((ctx.stack.pop() ** ctx.stack.pop()) & MAX_UINT256))
+    (lambda ctx: ctx.stack.push((ctx.stack.pop() ** ctx.stack.pop()) & MAX_UINT256)),
 )
 
 LT = instruction(0x10, "LT", execute_LT)
