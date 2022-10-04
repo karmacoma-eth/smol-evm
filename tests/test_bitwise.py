@@ -1,6 +1,6 @@
 from smol_evm.constants import MAX_UINT256
 from smol_evm.context import ExecutionContext
-from smol_evm.opcodes import AND,OR,XOR,NOT,SHL,SHR,BYTE
+from smol_evm.opcodes import AND,OR,XOR,NOT,SHL,SHR,SAR,BYTE
 
 import pytest
 
@@ -85,6 +85,12 @@ def test_shl_non_power_of_two(context):
     SHL.execute(with_stack_contents(context, [15, 1]))
     assert context.stack.pop() == 30
 
+def test_sar(context):
+    SAR.execute(with_stack_contents(context,[0x80000000000000000000000000000000000000000000000000000000000000ff,2]))
+    assert context.stack.pop() == 0xe00000000000000000000000000000000000000000000000000000000000003f
+
+    SAR.execute(with_stack_contents(context,[0x70000000000000000000000000000000000000000000000000000000000000ff,2]))
+    assert context.stack.pop() == 0x1c0000000000000000000000000000000000000000000000000000000000003f
 
 def test_byte(context):
     BYTE.execute(with_stack_contents(context, [0xABCDEF0908070605040302010000000000000000000000000000000000000000, 0]))
