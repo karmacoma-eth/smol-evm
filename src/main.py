@@ -1,25 +1,30 @@
 #!/usr/bin/env python3
 
 import argparse
+import sys
+
+from dataclasses import dataclass
+from traceback import print_stack
 
 from smol_evm.context import Calldata
 from smol_evm.opcodes import UnknownOpcode
 from smol_evm.runner import run
 
 
+@dataclass
+class Args:
+    code: str
+    calldata: str
+    verbose: bool
+    print_stack: bool
+    print_memory: bool
+
+
 def strip_0x(s: str):
     return s[2:] if s and s.startswith("0x") else s
 
 
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--code", help="hex data of the code to run", required=True)
-    parser.add_argument(
-        "--calldata",
-        help="hex data to use as input, e.g. 0xcfae3217",
-    )
-    args = parser.parse_args()
-
+def with_args(args: Args):
     code = bytes.fromhex(strip_0x(args.code))
     calldata = bytes.fromhex(strip_0x(args.calldata)) if args.calldata else bytes()
 
@@ -27,11 +32,13 @@ def main():
         ret = run(
             code=code,
             calldata=calldata,
-            verbose=True,
-            print_stack=True,
-            print_memory=True,
+            verbose=args.verbose if args.verbose is not None else True,
+            print_stack=args.print_stack if args.print_stack is not None else True,
+            print_memory=args.print_memory if args.print_memory is not None else True,
         )
-        print(f"0x{ret.hex()}")
+
+        return ret
+
     except UnknownOpcode as e:
         print(f"🚧 Encountered an unknown/unimplemented opcode: {hex(e.opcode)}")
         print(f"If you want to contribute to smol🤏evm, now is your chance!")
@@ -43,6 +50,18 @@ def main():
         print(f"    🏗️  Create a pull request on GitHub")
         print(f"    🥳 Congrats, you're a contributor!")
         print()
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--code", help="hex data of the code to run", required=True)
+    parser.add_argument(
+        "--calldata",
+        help="hex data to use as input, e.g. 0xcfae3217",
+    )
+    args = parser.parse_args()
+    ret = with_args(args)
+    print(f"0x{ret.hex()}")
 
 
 if __name__ == "__main__":
