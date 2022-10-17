@@ -29,11 +29,11 @@ def toml_parse(toml_file):
 
 
 def run_huff(huff_file):
-    # extract base dir of huff file
-    base_dir = os.path.dirname(huff_file)
-    toml_file = os.path.join(base_dir, huff_file.replace(".huff", ".toml"))
+    dirname = os.path.dirname(huff_file)
+    basename = os.path.basename(huff_file)
+
+    toml_file = os.path.join(dirname, basename.replace(".huff", ".toml"))
     toml = toml_parse(toml_file)
-    # print(toml)
 
     code = runtime_bytecode(huff_file)
 
