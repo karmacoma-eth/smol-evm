@@ -1,0 +1,3 @@
+[submodule "examples/w1nt3r-evm-from-scratch"]
+	path = examples/w1nt3r-evm-from-scratch
+	url = git@github.com:w1nt3r-eth/evm-from-scratch.git
