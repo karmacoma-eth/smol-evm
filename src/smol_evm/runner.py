@@ -18,7 +18,7 @@ def run(
     posthook=None,
     print_stack=False,
     print_memory=False,
-) -> None:
+) -> bytes:
     """
     Executes code in a fresh context.
     """
@@ -57,4 +57,4 @@ def run(
     if verbose:
         print(f"Output: 0x{context.returndata.hex()}")
 
-    return context.returndata
+    return context
