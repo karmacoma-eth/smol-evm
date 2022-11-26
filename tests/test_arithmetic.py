@@ -1,6 +1,6 @@
 from smol_evm.constants import MAX_UINT256
 from smol_evm.context import ExecutionContext
-from smol_evm.opcodes import ADD, ADDMOD, DIV, SDIV, EXP, MOD, SMOD, MULMOD, SUB, uint_to_int, int_to_uint
+from smol_evm.opcodes import ADD, ADDMOD, DIV, SDIV, EXP, MOD, SMOD, MULMOD, SUB, SIGNEXTEND, uint_to_int, int_to_uint
 
 import pytest
 
@@ -112,3 +112,20 @@ def test_exp_simple(context):
 def test_exp_overflow(context):
     EXP.execute(with_stack_contents(context, [2, MAX_UINT256 - 1]))
     assert context.stack.pop() < MAX_UINT256    
+
+def test_SIGNEXTEND_simple(context):
+    SIGNEXTEND.execute(with_stack_contents(context, [0xFF, 0]))
+    assert context.stack.pop() == MAX_UINT256
+
+    SIGNEXTEND.execute(with_stack_contents(context, [0x7F, 0]))
+    assert context.stack.pop() == 0x7F
+
+    SIGNEXTEND.execute(with_stack_contents(context, [0xABCD, 1]))
+    assert context.stack.pop() == 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffabcd
+
+    SIGNEXTEND.execute(with_stack_contents(context, [0x1234, 1]))
+    assert context.stack.pop() == 0x1234
+
+def test_SIGNEXTEND_EXTREME(context):
+    SIGNEXTEND.execute(with_stack_contents(context, [0x1fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffaabb, 100]))
+    assert context.stack.pop() == 0x1fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffaabb
