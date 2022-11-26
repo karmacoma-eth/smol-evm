@@ -72,6 +72,21 @@ def execute_SUB(ctx: ExecutionContext) -> None:
     a, b = ctx.stack.pop(), ctx.stack.pop()
     ctx.stack.push((a - b) & MAX_UINT256)
 
+def execute_SIGNEXTEND(ctx: ExecutionContext) -> None:
+    a, b = ctx.stack.pop(), ctx.stack.pop() # a size in bytes, b int value
+    # take rightmost <a+1> bytes of integer b
+    b = b & ((1 << (a+1)*8) - 1)
+
+    # check if integer b is signed
+    if (b >> ((a+1) * 8 - 1)) != 0:
+        # create bitmask of all ones up to first bit of "b" (starting from left)
+        # e.g. b = 1010 (0xA) => mask = 1111 1111 ... 1010
+        mask = MAX_UINT256 ^ ((1 << (a+1)*8) - 1)
+        
+        # set all bits left from "b" to one
+        b = b | mask 
+
+    ctx.stack.push(b) 
 
 def execute_LT(ctx: ExecutionContext) -> None:
     a, b = ctx.stack.pop(), ctx.stack.pop()
@@ -205,6 +220,8 @@ EXP = instruction(
     "EXP",
     (lambda ctx: ctx.stack.push((ctx.stack.pop() ** ctx.stack.pop()) & MAX_UINT256)),
 )
+
+SIGNEXTEND = instruction(0x0B, "SIGNEXTEND", execute_SIGNEXTEND)
 
 LT = instruction(0x10, "LT", execute_LT)
 GT = instruction(0x11, "GT", execute_GT)
