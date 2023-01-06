@@ -4,6 +4,11 @@ import os
 
 from smol_evm.runner import run
 
+# run with
+# $ poetry run python examples/w1nt3r-runner.py
+
+# see https://github.com/w1nt3r-eth/evm-from-scratch
+
 
 def evm(code):
     context = run(code=code)
@@ -14,6 +19,17 @@ def evm(code):
     return stack
 
 
+def error(test: dict, num: int, msg: str):
+    print(f"❌ Test #{num} {test['name']}")
+
+    print(msg)
+
+    print("\nTest code:")
+    print(test["code"]["asm"])
+
+    print("\nHint:", test["hint"])
+
+
 def test():
     script_dirname = os.path.dirname(os.path.abspath(__file__))
     json_file = os.path.join(script_dirname, "w1nt3r-evm-from-scratch", "evm.json")
@@ -21,36 +37,43 @@ def test():
         data = json.load(f)
         total = len(data)
 
+        print(f"Running {total} tests...")
+
         for i, test in enumerate(data):
             # Note: as the test cases get more complex, you'll need to modify this
             # to pass down more arguments to the evm function
             code = bytes.fromhex(test["code"]["bin"])
-
-            stack = evm(code)
-
             expected_stack = [int(x, 16) for x in test["expect"]["stack"]]
+
+            try:
+                stack = evm(code)
+            except Exception as e:
+                error(
+                    test,
+                    i + 1,
+                    f"expected stack: {expected_stack}\nbut execution raised: {e}",
+                )
+
+                print("\nTrace:")
+                run(code=code, verbose=True, print_stack=True, print_memory=True)
+
+                break
 
             # if any value differs:
             if any(x != y for x, y in zip(stack, expected_stack)):
-                print(f"❌ Test #{i + 1}/{total} {test['name']}")
+                error(
+                    test,
+                    i + 1,
+                    f"Stack doesn't match\n expected: {expected_stack}\n   actual: {stack}",
+                )
 
-                print("Stack doesn't match")
-                print(" expected:", expected_stack)
-                print("   actual:", stack)
-                print("")
-                print("Test code:")
-                print(test["code"]["asm"])
-                print("")
-                print(f"Progress: {i}/{len(data)}")
-                print("")
-
-                print("Trace:")
+                print("\nTrace:")
                 run(code=code, verbose=True, print_stack=True, print_memory=True)
 
                 break
 
             else:
-                print(f"✅ Test #{i + 1}/{total} {test['name']}")
+                print(f"✅ Test #{i + 1} {test['name']}")
 
 
 if __name__ == "__main__":
