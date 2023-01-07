@@ -142,6 +142,12 @@ def test_smod_zero(context):
     assert context.stack.pop() == 0
 
 
+def test_smod_by_zero(context):
+    # -1 % 0
+    SMOD.execute(with_stack_contents(context, [0, int_to_uint(-1)]))
+    assert context.stack.pop() == 0
+
+
 def test_smod_EXTREME(context):
     # -1 % -1 == 0
     SMOD.execute(with_stack_contents(context, [MAX_UINT256, MAX_UINT256]))

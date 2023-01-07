@@ -163,6 +163,11 @@ def execute_SDIV(ctx: ExecutionContext) -> None:
     ctx.stack.push(int_to_uint(a // b) if b != 0 else 0)
 
 
+def execute_SMOD(ctx: ExecutionContext) -> None:
+    a, b = uint_to_int(ctx.stack.pop()), uint_to_int(ctx.stack.pop())
+    ctx.stack.push(int_to_uint(a % b) if b != 0 else 0)
+
+
 STOP = instruction(0x00, "STOP", (lambda ctx: ctx.stop()))
 ADD = instruction(
     0x01,
@@ -199,11 +204,7 @@ MOD = instruction(
 SMOD = instruction(
     0x07,
     "SMOD",
-    (
-        lambda ctx: ctx.stack.push(
-            int_to_uint(uint_to_int(ctx.stack.pop()) % uint_to_int(ctx.stack.pop()))
-        )
-    ),
+    execute_SMOD,
 )
 
 ADDMOD = instruction(
