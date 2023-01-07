@@ -148,6 +148,11 @@ def execute_CALLDATACOPY(ctx: ExecutionContext) -> None:
         )
 
 
+def execute_DIV(ctx: ExecutionContext) -> None:
+    a, b = ctx.stack.pop(), ctx.stack.pop()
+    ctx.stack.push(a // b if b != 0 else 0)
+
+
 STOP = instruction(0x00, "STOP", (lambda ctx: ctx.stop()))
 ADD = instruction(
     0x01,
@@ -167,7 +172,7 @@ SUB = instruction(
 DIV = instruction(
     0x04,
     "DIV",
-    (lambda ctx: ctx.stack.push((ctx.stack.pop() // ctx.stack.pop()) & MAX_UINT256)),
+    execute_DIV,
 )
 SDIV = instruction(
     0x05,
