@@ -104,6 +104,12 @@ def test_sdiv_zero(context):
     assert context.stack.pop() == 0
 
 
+def test_sdiv_by_zero(context):
+    # -1 / 0
+    SDIV.execute(with_stack_contents(context, [0, int_to_uint(-11)]))
+    assert context.stack.pop() == 0
+
+
 def test_mod_simple(context):
     MOD.execute(with_stack_contents(context, [2, 11]))
     assert context.stack.pop() == 1
@@ -131,6 +137,7 @@ def test_smod_simple(context):
 
 
 def test_smod_zero(context):
+    # 0 % -11
     SMOD.execute(with_stack_contents(context, [int_to_uint(-11), 0]))
     assert context.stack.pop() == 0
 
