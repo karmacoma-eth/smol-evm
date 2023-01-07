@@ -5,9 +5,6 @@ from smol_evm.runner import run, ExecutionLimitReached
 
 import pytest
 
-@pytest.fixture
-def context() -> ExecutionContext:
-    pass
 
 def test_simple_jump():
     """just jump to the JUMPDEST"""
@@ -17,7 +14,7 @@ def test_simple_jump():
         JUMP,
         JUMPDEST
     ])
-    ret = run(code)
+    ret = run(code).returndata
     assert ret == b""
 
 def test_jump_hyperspace():
@@ -51,7 +48,7 @@ def test_invalid_jump_dest_in_branch_not_taken():
         PUSH1, 42, # target (bad)
         JUMPI
     ])
-    ret = run(code)
+    ret = run(code).returndata
     assert ret == b""
 
 def test_infinite_loop():
@@ -81,7 +78,7 @@ def test_simple_jumpi_not_taken():
         JUMPDEST
     ])
 
-    ret = run(code)
+    ret = run(code).returndata
     assert int.from_bytes(ret, 'big') == 42
 
 def test_simple_jumpi_taken():
@@ -102,7 +99,7 @@ def test_simple_jumpi_taken():
         JUMPDEST
     ])
 
-    ret = run(code)
+    ret = run(code).returndata
     assert ret == b""
 
 
@@ -151,6 +148,6 @@ def test_four_squared():
         JUMP,       # -> back to loop_cond
     ])
 
-    ret = run(code, verbose=True, max_steps=200)
+    ret = run(code, verbose=True, max_steps=200).returndata
     assert int.from_bytes(ret, 'big') == 4 * 4
 
