@@ -110,9 +110,14 @@ def test_mod_simple(context):
 
 
 def test_mod_zero(context):
+    # 0 mod 11
     MOD.execute(with_stack_contents(context, [11, 0]))
     assert context.stack.pop() == 0
 
+def test_mod_by_zero(context):
+    # 1 mod 0
+    MOD.execute(with_stack_contents(context, [0, 1]))
+    assert context.stack.pop() == 0
 
 def test_mod_EXTREME(context):
     MOD.execute(with_stack_contents(context, [MAX_UINT256, MAX_UINT256]))
