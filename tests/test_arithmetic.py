@@ -74,6 +74,11 @@ def test_div_zero(context):
     assert context.stack.pop() == 0
 
 
+def test_div_by_zero(context):
+    DIV.execute(with_stack_contents(context, [0, 1]))
+    assert context.stack.pop() == 0
+
+
 def test_sdiv_simple(context):
     # NOTE: int(MAX_UINT256) is -1
     # 20 / -2
