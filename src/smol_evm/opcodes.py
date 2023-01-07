@@ -82,11 +82,11 @@ def execute_SIGNEXTEND(ctx: ExecutionContext) -> None:
         # create bitmask of all ones up to first bit of "b" (starting from left)
         # e.g. b = 1010 (0xA) => mask = 1111 1111 ... 1010
         mask = MAX_UINT256 ^ ((1 << (a+1)*8) - 1)
-        
-        # set all bits left from "b" to one
-        b = b | mask 
 
-    ctx.stack.push(b) 
+        # set all bits left from "b" to one
+        b = b | mask
+
+    ctx.stack.push(b)
 
 def execute_LT(ctx: ExecutionContext) -> None:
     a, b = ctx.stack.pop(), ctx.stack.pop()
@@ -158,6 +158,11 @@ def execute_MOD(ctx: ExecutionContext) -> None:
     ctx.stack.push(a % b if b != 0 else 0)
 
 
+def execute_SDIV(ctx: ExecutionContext) -> None:
+    a, b = uint_to_int(ctx.stack.pop()), uint_to_int(ctx.stack.pop())
+    ctx.stack.push(int_to_uint(a // b) if b != 0 else 0)
+
+
 STOP = instruction(0x00, "STOP", (lambda ctx: ctx.stop()))
 ADD = instruction(
     0x01,
@@ -182,11 +187,7 @@ DIV = instruction(
 SDIV = instruction(
     0x05,
     "SDIV",
-    (
-        lambda ctx: ctx.stack.push(
-            int_to_uint(uint_to_int(ctx.stack.pop()) // uint_to_int(ctx.stack.pop()))
-        )
-    ),
+    execute_SDIV,
 )
 
 MOD = instruction(
