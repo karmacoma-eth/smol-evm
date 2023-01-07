@@ -153,6 +153,11 @@ def execute_DIV(ctx: ExecutionContext) -> None:
     ctx.stack.push(a // b if b != 0 else 0)
 
 
+def execute_MOD(ctx: ExecutionContext) -> None:
+    a, b = ctx.stack.pop(), ctx.stack.pop()
+    ctx.stack.push(a % b if b != 0 else 0)
+
+
 STOP = instruction(0x00, "STOP", (lambda ctx: ctx.stop()))
 ADD = instruction(
     0x01,
@@ -187,7 +192,7 @@ SDIV = instruction(
 MOD = instruction(
     0x06,
     "MOD",
-    (lambda ctx: ctx.stack.push((ctx.stack.pop() % ctx.stack.pop() & MAX_UINT256))),
+    execute_MOD,
 )
 
 SMOD = instruction(
