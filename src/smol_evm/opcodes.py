@@ -134,9 +134,9 @@ def execute_SHR(ctx: ExecutionContext) -> None:
 
 def execute_SAR(ctx: ExecutionContext) -> None:
     a, b = ctx.stack.pop(), ctx.stack.pop()
-    if uint_to_int(b) < 0 and a > 0: 
-        ctx.stack.push(b >> a | int( '1' * a, 2) << 256 - a)
-    else : 
+    if uint_to_int(b) < 0 and a > 0:
+        ctx.stack.push(b >> a | int("1" * a, 2) << 256 - a)
+    else:
         ctx.stack.push(b >> a)
 
 

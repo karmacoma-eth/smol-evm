@@ -35,7 +35,7 @@ def with_args(args: Args):
             verbose=args.verbose if args.verbose is not None else True,
             print_stack=args.print_stack if args.print_stack is not None else True,
             print_memory=args.print_memory if args.print_memory is not None else True,
-        )
+        ).returndata
 
         return ret
 

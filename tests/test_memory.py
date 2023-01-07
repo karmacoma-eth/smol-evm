@@ -91,7 +91,7 @@ def test_msize_initially_zero():
         RETURN      #           | 0         | return mem[0] = 0
     ])
 
-    ret = run(code, verbose=True)
+    ret = run(code, verbose=True).returndata
     assert int.from_bytes(ret, 'big') == 0
 
 def test_msize_incremented_on_mload():
@@ -108,7 +108,7 @@ def test_msize_incremented_on_mload():
         RETURN      # 0         | 64        | return mem[0] = 64
     ])
 
-    ret = run(code)
+    ret = run(code).returndata
     assert int.from_bytes(ret, 'big') == 64
 
 def test_mstore_mload_reflexivity():
@@ -124,6 +124,6 @@ def test_mstore_mload_reflexivity():
         RETURN
     ])
 
-    ret = run(code)
+    ret = run(code).returndata
     assert int.from_bytes(ret, 'big') == 0xff112233445566778899aabbccddeeff
 

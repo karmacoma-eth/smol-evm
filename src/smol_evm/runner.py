@@ -18,7 +18,7 @@ def run(
     posthook=None,
     print_stack=False,
     print_memory=False,
-) -> bytes:
+) -> ExecutionContext:
     """
     Executes code in a fresh context.
     """
