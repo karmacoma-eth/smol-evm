@@ -1,7 +1,7 @@
 from smol_evm.constants import MAX_UINT256
 from smol_evm.context import ExecutionContext, Calldata
 from smol_evm.opcodes import CALLDATALOAD, CALLDATASIZE , CALLDATACOPY,MLOAD
-from shared import with_stack_contents, with_calldata
+from shared import with_calldata
 
 import pytest
 
@@ -59,4 +59,4 @@ def test_calldataload(context):
     assert context.stack.pop() == int("0x1100000000000000000000000000000000000000000000000000000000000000",16)
 
 
-    
+
