@@ -133,11 +133,8 @@ def execute_SHR(ctx: ExecutionContext) -> None:
 
 
 def execute_SAR(ctx: ExecutionContext) -> None:
-    a, b = ctx.stack.pop(), ctx.stack.pop()
-    if uint_to_int(b) < 0 and a > 0:
-        ctx.stack.push(b >> a | int("1" * a, 2) << 256 - a)
-    else:
-        ctx.stack.push(b >> a)
+    shift, signed_value = ctx.stack.pop(), uint_to_int(ctx.stack.pop())
+    ctx.stack.push(int_to_uint(signed_value >> shift))
 
 
 def execute_CALLDATACOPY(ctx: ExecutionContext) -> None:
