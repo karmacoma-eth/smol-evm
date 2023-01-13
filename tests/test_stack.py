@@ -3,7 +3,7 @@ from smol_evm.context import ExecutionContext
 from smol_evm.opcodes import DUP1, DUP2, POP
 from smol_evm.stack import Stack, StackOverflow, StackUnderflow, InvalidStackItem
 
-from shared import with_stack_contents
+from shared import with_stack
 
 import pytest
 
@@ -99,18 +99,18 @@ def test_peek_underflow(stack):
         stack.peek(1)
 
 def test_dup1(context):
-    DUP1.execute(with_stack_contents(context, [1, 2, 3]))
+    DUP1.execute(with_stack(context, [1, 2, 3]))
     assert context.stack.pop() == 3
     assert context.stack.pop() == 3
     assert context.stack.pop() == 2
 
 def test_dup2(context):
-    DUP2.execute(with_stack_contents(context, [1, 2, 3]))
+    DUP2.execute(with_stack(context, [1, 2, 3]))
     assert context.stack.pop() == 2
     assert context.stack.pop() == 3
     assert context.stack.pop() == 2
 
 def test_pop_instruction(context):
-    POP.execute(with_stack_contents(context, [1, 2, 3]))
+    POP.execute(with_stack(context, [1, 2, 3]))
     assert context.stack.pop() == 2
     assert context.stack.pop() == 1
