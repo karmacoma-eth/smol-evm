@@ -433,7 +433,7 @@ REVERT = instruction(0xFD, "REVERT", (lambda ctx: ctx.stop()))
 
 def decode_opcode(context) -> Instruction:
     if context.pc < 0:
-        raise InvalidCodeOffset({"code": context.code.hex(), "pc": context.pc})
+        raise InvalidCodeOffset(offset=context.pc, context=context)
 
     # section 9.4.1 of the yellow paper, if pc is outside code, then the operation to be executed is STOP
     if context.pc >= len(context.code):
