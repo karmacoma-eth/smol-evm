@@ -167,7 +167,7 @@ def execute_SMOD(ctx: ExecutionContext) -> None:
     ctx.stack.push(int_to_uint(a % b) if b != 0 else 0)
 
 
-STOP = instruction(0x00, "STOP", (lambda ctx: ctx.stop()))
+STOP = instruction(0x00, "STOP", (lambda ctx: ctx.stop(success=True)))
 ADD = instruction(
     0x01,
     "ADD",
@@ -438,10 +438,10 @@ RETURN = instruction(
 )
 
 # TODO: no-op for now
-REVERT = instruction(0xFD, "REVERT", (lambda ctx: ctx.stop()))
+REVERT = instruction(0xFD, "REVERT", (lambda ctx: ctx.stop(success=False)))
 
 # TODO: no-op for now. Equivalent to REVERT(0, 0) but consumes all available gas
-INVALID = instruction(0xFE, "INVALID", (lambda ctx: ctx.stop()))
+INVALID = instruction(0xFE, "INVALID", (lambda ctx: ctx.stop(success=False)))
 
 if os.getenv("DEBUG"):
     print(f"📈 {len([x for x in INSTRUCTIONS if x is not None])} instructions completed")
