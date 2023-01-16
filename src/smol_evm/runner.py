@@ -27,6 +27,8 @@ def run(
 
     while not context.stopped:
         pc_before = context.pc
+
+        # increments pc
         instruction = decode_opcode(context)
 
         if prehook:
