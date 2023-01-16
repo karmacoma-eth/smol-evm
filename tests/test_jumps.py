@@ -24,9 +24,8 @@ def test_jump_hyperspace():
         PUSH1, 42,
         JUMP
     ])
-    with pytest.raises(InvalidJumpDestination) as excinfo:
-        run(code)
-    assert excinfo.value.target_pc == 42
+    ctx = run(code)
+    assert ctx.success is False
 
 def test_jump_into_push_arg():
     """can only jump on instructions boundaries, so can't fool the EVM by packing a JUMPDEST in a PUSH argument"""
@@ -36,9 +35,8 @@ def test_jump_into_push_arg():
         PUSH1, 1,
         JUMP
     ])
-    with pytest.raises(InvalidJumpDestination) as excinfo:
-        run(code)
-    assert excinfo.value.target_pc == 1
+    ctx = run(code)
+    assert ctx.success is False
 
 def test_invalid_jump_dest_in_branch_not_taken():
     """we know we can check for invalid jump destinations, but what if we don't take the branch?"""
