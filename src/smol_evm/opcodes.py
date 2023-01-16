@@ -342,7 +342,8 @@ JUMPI = instruction(
 PC = instruction(
     0x58,
     "PC",
-    (lambda ctx: ctx.stack.push(ctx.pc)),
+    # Get the value of the program counter prior to the increment corresponding to this instruction
+    (lambda ctx: ctx.stack.push(ctx.pc - 1)),
 )
 MSIZE = instruction(
     0x59,
@@ -438,7 +439,7 @@ INVALID = instruction(0xFE, "INVALID", (lambda ctx: ctx.stop()))
 if os.getenv("DEBUG"):
     print(f"📈 {len([x for x in INSTRUCTIONS if x is not None])} instructions completed")
 
-def decode_opcode(context) -> Instruction:
+def decode_opcode(context: ExecutionContext) -> Instruction:
     if context.pc < 0:
         raise InvalidCodeOffset(offset=context.pc, context=context)
 
@@ -446,6 +447,7 @@ def decode_opcode(context) -> Instruction:
     if context.pc >= len(context.code):
         return STOP
 
+    # increments context.pc
     opcode = context.read_code(1)
     instruction = INSTRUCTIONS[opcode]
     if instruction is None:
