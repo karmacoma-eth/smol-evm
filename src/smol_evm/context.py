@@ -59,18 +59,21 @@ class ExecutionContext:
         self.stack = stack if stack else Stack()
         self.memory = memory if memory else Memory()
         self.pc = pc
-        self.stopped = False
+        self.success = None
         self.returndata = bytes()
         self.jumpdests = valid_jump_destinations(code)
         self.calldata = calldata if calldata else Calldata()
         self.storage = storage if storage else Storage()
 
     def set_return_data(self, offset: int, length: int) -> None:
-        self.stopped = True
+        self.success = True
         self.returndata = self.memory.load_range(offset, length)
 
-    def stop(self) -> None:
-        self.stopped = True
+    def stop(self, success: bool) -> None:
+        self.success = success
+
+    def is_stopped(self) -> bool:
+        return self.success is not None
 
     def read_code(self, num_bytes) -> int:
         """

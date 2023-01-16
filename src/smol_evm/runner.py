@@ -25,7 +25,7 @@ def run(
     context = ExecutionContext(code=code, calldata=Calldata(calldata))
     num_steps = 0
 
-    while not context.stopped:
+    while not context.is_stopped():
         pc_before = context.pc
 
         # increments pc
