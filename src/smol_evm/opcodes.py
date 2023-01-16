@@ -1,3 +1,5 @@
+import os
+
 from dataclasses import dataclass
 from typing import Sequence, Union
 from eth_utils import keccak
@@ -430,6 +432,11 @@ RETURN = instruction(
 # TODO: no-op for now
 REVERT = instruction(0xFD, "REVERT", (lambda ctx: ctx.stop()))
 
+# TODO: no-op for now. Equivalent to REVERT(0, 0) but consumes all available gas
+INVALID = instruction(0xFE, "INVALID", (lambda ctx: ctx.stop()))
+
+if os.getenv("DEBUG"):
+    print(f"📈 {len([x for x in INSTRUCTIONS if x is not None])} instructions completed")
 
 def decode_opcode(context) -> Instruction:
     if context.pc < 0:
