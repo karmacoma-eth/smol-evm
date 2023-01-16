@@ -43,9 +43,10 @@ def instruction(opcode: int, name: str, execute_func: callable):
 
 
 def _do_jump(ctx: ExecutionContext, target_pc: int) -> None:
-    if target_pc not in ctx.jumpdests:
-        raise InvalidJumpDestination(target_pc=target_pc, context=ctx)
-    ctx.set_program_counter(target_pc)
+    if target_pc in ctx.jumpdests:
+        ctx.set_program_counter(target_pc)
+    else:
+        ctx.stop(success=False)
 
 
 def uint_to_int(n):
