@@ -350,6 +350,13 @@ MSIZE = instruction(
     "MSIZE",
     (lambda ctx: ctx.stack.push(32 * ctx.memory.active_words())),
 )
+GAS = instruction(
+    0x5A,
+    "GAS",
+    # Get the amount of available gas, including the corresponding reduction for the cost of this instruction.
+    # TODO: placeholder for now
+    (lambda ctx: ctx.stack.push(MAX_UINT256)),
+)
 JUMPDEST = instruction(
     0x5B,
     "JUMPDEST",
