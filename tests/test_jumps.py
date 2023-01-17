@@ -31,7 +31,7 @@ def test_jump_into_push_arg():
     """can only jump on instructions boundaries, so can't fool the EVM by packing a JUMPDEST in a PUSH argument"""
     # 605b600156
     code = assemble([
-        PUSH1, JUMPDEST.opcode,
+        PUSH1, 0x5B,
         PUSH1, 1,
         JUMP
     ])
