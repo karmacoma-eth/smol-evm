@@ -5,7 +5,7 @@ import os
 from smol_evm.runner import run
 
 # run with
-# $ poetry run python examples/w1nt3r-runner.py
+# $ poetry run ./examples/w1nt3r-runner.py
 
 # see https://github.com/w1nt3r-eth/evm-from-scratch
 
