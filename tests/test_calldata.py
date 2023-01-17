@@ -18,28 +18,28 @@ def test_simple_calldataload(context):
     ctx = with_calldata(context, range(32))
     ctx.stack.push(0)
 
-    CALLDATALOAD.execute(ctx)
+    CALLDATALOAD(ctx)
     assert ctx.stack.pop() == 0x0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f
 
 
 def test_empty_calldataload(context):
     context.stack.push(0)
-    CALLDATALOAD.execute(context)
+    CALLDATALOAD(context)
     assert context.stack.pop() == 0
 
 
 def test_calldataload_uint256_overflow(context):
     # 7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff35
     context.stack.push(MAX_UINT256)
-    CALLDATALOAD.execute(context)
+    CALLDATALOAD(context)
     assert context.stack.pop() == 0
 
 def test_calldatasize_empty(context):
-    CALLDATASIZE.execute(context)
+    CALLDATASIZE(context)
     assert context.stack.pop() == 0
 
 def test_calldatasize_one(context):
-    CALLDATASIZE.execute(with_calldata(context, [0]))
+    CALLDATASIZE(with_calldata(context, [0]))
     assert context.stack.pop() == 1
 
 
@@ -48,14 +48,14 @@ def test_calldataload(context):
     ctx.stack.push(33)
     ctx.stack.push(0)
     ctx.stack.push(0)
-    CALLDATACOPY.execute(ctx)
+    CALLDATACOPY(ctx)
     # loading word from memory offset 0
     context.stack.push(0)
-    MLOAD.execute(context)
+    MLOAD(context)
     assert context.stack.pop() == int("0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",16)
     # loading word from memory offset 0x20 (32)
     context.stack.push(32)
-    MLOAD.execute(context)
+    MLOAD(context)
     assert context.stack.pop() == int("0x1100000000000000000000000000000000000000000000000000000000000000",16)
 
 

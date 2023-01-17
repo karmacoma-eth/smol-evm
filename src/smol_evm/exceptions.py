@@ -9,11 +9,11 @@ class EVMException(Exception):
 
 
 @dataclass
-class UnknownOpcode(EVMException):
+class UnknownOpcode(Exception):
     opcode: int
 
     def __str__(self):
-        return f"opcode={hex(self.opcode)}, context={self.context}"
+        return f"opcode={hex(self.opcode)}"
 
 
 @dataclass

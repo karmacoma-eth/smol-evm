@@ -17,16 +17,21 @@ class InvalidStorageValue(Exception):
 
 # see yellow paper section 9.4.3
 def valid_jump_destinations(code: bytes) -> set[int]:
-    from .opcodes import JUMPDEST, PUSH1, PUSH32
+    from .opcodes import REGISTRY, JUMPDEST, PUSH1, PUSH32
+
+    JUMPDEST_OPCODE = REGISTRY[JUMPDEST].opcode
+    PUSH1_OPCODE = REGISTRY[PUSH1].opcode
+    PUSH32_OPCODE = REGISTRY[PUSH32].opcode
 
     jumpdests = set()
     i = 0
     while i < len(code):
+
         current_op = code[i]
-        if current_op == JUMPDEST.opcode:
+        if current_op == JUMPDEST_OPCODE:
             jumpdests.add(i)
-        elif PUSH1.opcode <= current_op <= PUSH32.opcode:
-            i += current_op - PUSH1.opcode + 1
+        elif PUSH1_OPCODE <= current_op <= PUSH32_OPCODE:
+            i += current_op - PUSH1_OPCODE + 1
 
         i += 1
     return jumpdests
