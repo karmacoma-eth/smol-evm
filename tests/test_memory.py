@@ -1,4 +1,4 @@
-from smol_evm.opcodes import assemble, PUSH1, PUSH16, RETURN, MLOAD, MSTORE, MSTORE8, MSIZE
+from smol_evm.opcodes import assemble, PUSH, RETURN, MLOAD, MSTORE, MSTORE8, MSIZE
 from smol_evm.memory import Memory, InvalidMemoryAccess, InvalidMemoryValue
 from smol_evm.runner import run
 
@@ -84,10 +84,10 @@ def test_msize_initially_zero():
     code = assemble(
     [               # stack     | memory    | note
         MSIZE,      # 0         |           | memory size in bytes (0 active words)
-        PUSH1, 0,   # 0, 0      |           | mem offset
+        PUSH(0),    # 0, 0      |           | mem offset
         MSTORE8,    #           | 0         | store memory size
-        PUSH1, 1,   # 1         | 0         | mem length
-        PUSH1, 0,   # 0, 1      | 0         | mem offset
+        PUSH(1),    # 1         | 0         | mem length
+        PUSH(0),    # 0, 1      | 0         | mem offset
         RETURN      #           | 0         | return mem[0] = 0
     ])
 
@@ -98,13 +98,13 @@ def test_msize_incremented_on_mload():
     # 6010515960005360016000f3
     code = assemble(
     [               # stack     | memory    | note
-        PUSH1, 16,  # 16        |           | mem offset
+        PUSH(16),   # 16        |           | mem offset
         MLOAD,      # 0         | 0         | straddles the first and second words (2 active words)
         MSIZE,      # 64, 0     | 0         | memory size in bytes
-        PUSH1, 0,   # 0, 64, 0  | 0         | mem offset
+        PUSH(0),    # 0, 64, 0  | 0         | mem offset
         MSTORE8,    # 0         | 64        | store memory size
-        PUSH1, 1,   # 1, 0      | 64        | mem length
-        PUSH1, 0,   # 0, 1, 0   | 64        | mem offset
+        PUSH(1),    # 1, 0      | 64        | mem length
+        PUSH(0),    # 0, 1, 0   | 64        | mem offset
         RETURN      # 0         | 64        | return mem[0] = 64
     ])
 
@@ -114,13 +114,13 @@ def test_msize_incremented_on_mload():
 def test_mstore_mload_reflexivity():
     code = assemble(
     [
-        PUSH16, 0xff112233445566778899aabbccddeeff,
-        PUSH1, 0,
+        PUSH(0xff112233445566778899aabbccddeeff),
+        PUSH(0),
         MSTORE,
-        PUSH1, 0,
+        PUSH(0),
         MLOAD,
-        PUSH1, 32,
-        PUSH1, 0,
+        PUSH(32),
+        PUSH(0),
         RETURN
     ])
 

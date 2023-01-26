@@ -3,28 +3,15 @@
 import argparse
 import sys
 
-from dataclasses import dataclass
-from traceback import print_stack
-
-from smol_evm.context import Calldata
 from smol_evm.opcodes import UnknownOpcode
 from smol_evm.runner import run
-
-
-@dataclass
-class Args:
-    code: str
-    calldata: str
-    verbose: bool
-    print_stack: bool
-    print_memory: bool
 
 
 def strip_0x(s: str):
     return s[2:] if s and s.startswith("0x") else s
 
 
-def with_args(args: Args):
+def run_with_args(args: argparse.Namespace) -> bytes:
     code = bytes.fromhex(strip_0x(args.code))
     calldata = bytes.fromhex(strip_0x(args.calldata)) if args.calldata else bytes()
 
@@ -50,6 +37,7 @@ def with_args(args: Args):
         print(f"    🏗️  Create a pull request on GitHub")
         print(f"    🥳 Congrats, you're a contributor!")
         print()
+        sys.exit(1)
 
 
 def main():
@@ -60,7 +48,7 @@ def main():
         help="hex data to use as input, e.g. 0xcfae3217",
     )
     args = parser.parse_args()
-    ret = with_args(args)
+    ret = run_with_args(args)
     print(f"0x{ret.hex()}")
 
 
