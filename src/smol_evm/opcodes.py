@@ -4,25 +4,81 @@ import os
 from dataclasses import dataclass
 from typing import Callable, Optional, Sequence, Union
 from eth_utils import keccak
+from math import ceil
 
 from .context import ExecutionContext
 from .exceptions import InvalidCodeOffset, UnknownOpcode, InvalidJumpDestination
 from .constants import MAX_UINT256
 
+PUSH1_OPCODE = 0x60
+PUSH32_OPCODE = 0x7f
 
-class Instruction:
-    def __init__(self, opcode: int, name: str):
-        self.opcode = opcode
-        self.name = name
+class Operand:
+    """
+    A class that represents a numeric operand in an instruction.
+    """
 
-    def execute(self, context: ExecutionContext) -> None:
-        raise NotImplementedError
+    def __init__(self, width: int, value: int):
+        """
+        :param width: the width of the operand in bytes
+        :param value: the value of the operand
+        """
+        self.width = width
+        self.value = value
 
     def __str__(self) -> str:
-        return self.name
+        format_str = f"0x{{:0{self.width * 2}x}}"
+        arg_str = f" {format_str.format(self.value)}"
+        return arg_str
 
     def __repr__(self) -> str:
-        return self.name
+        return f"Operand({self.width}, {self.value})"
+
+
+class Instruction:
+    def __init__(self, opcode: int, name: str, operands: Sequence[Operand] = ()):
+        self.opcode = opcode
+        self.name = name
+        self.operands = operands
+
+    def __str__(self) -> str:
+        return self.name + " ".join([str(x) for x in self.operands])
+
+    def __repr__(self) -> str:
+        return (
+            f'Instruction({self.opcode}, "{self.name}", {self.operands})'
+            if self.operands
+            else f'Instruction({self.opcode}, "{self.name}")'
+        )
+
+    def execute(self, context: ExecutionContext) -> None:
+        if self.is_push():
+            if self.operands:
+                context.stack.push(self.operands[0].value)
+            else:
+                # this instruction has not been materialized, grab the operand from the context's code
+                context.stack.push(context.read_code(self.push_width()))
+
+        else:
+            raise NotImplementedError
+
+    def is_push(self) -> bool:
+        """
+        returns true if this instruction's opcode is between the opcodes of PUSH1 and PUSH32
+        """
+        return PUSH1_OPCODE <= self.opcode <= PUSH32_OPCODE
+
+    def push_width(self) -> int:
+        return self.opcode - PUSH1_OPCODE + 1 if self.is_push() else 0
+
+    def to_bytes(self) -> bytes:
+        """
+        Returns the bytes that represent this instruction.
+        """
+        if self.is_push():
+            return bytes([self.opcode]) + int_to_bytes(self.operands[0].value)
+        else:
+            return bytes([self.opcode])
 
 
 class DuplicateOpcode(Exception):
@@ -47,6 +103,8 @@ class InstructionRegistry:
 
         if callable(item):
             return self.by_func[item]
+
+        raise TypeError(f"Unexpected type for instruction lookup: {type(item)}")
 
     def __iter__(self):
         return iter([i for i in self.by_code if i is not None])
@@ -84,6 +142,9 @@ def insn(opcode: int, name: Optional[str] = None):
 
         i = instruction(opcode, name or func.__name__, wrapped)
 
+        # add the opcode to the function to enable syntactic sugar like PUSH1.opcode
+        wrapped.opcode = opcode
+
         return wrapped
 
     return decorator_insn
@@ -101,7 +162,6 @@ def int_to_uint(n):
     return n & MAX_UINT256
 
 
-
 @insn(0x00)
 def STOP(ctx: ExecutionContext) -> None:
     ctx.stop(success=True)
@@ -111,110 +171,131 @@ def STOP(ctx: ExecutionContext) -> None:
 def ADD(ctx: ExecutionContext) -> None:
     ctx.stack.push((ctx.stack.pop() + ctx.stack.pop()) & MAX_UINT256)
 
+
 @insn(0x02)
 def MUL(ctx: ExecutionContext) -> None:
     ctx.stack.push((ctx.stack.pop() * ctx.stack.pop()) & MAX_UINT256)
+
 
 @insn(0x03)
 def SUB(ctx: ExecutionContext) -> None:
     a, b = ctx.stack.pop(), ctx.stack.pop()
     ctx.stack.push((a - b) & MAX_UINT256)
 
+
 @insn(0x04)
 def DIV(ctx: ExecutionContext) -> None:
     a, b = ctx.stack.pop(), ctx.stack.pop()
     ctx.stack.push(a // b if b != 0 else 0)
+
 
 @insn(0x05)
 def SDIV(ctx: ExecutionContext) -> None:
     a, b = uint_to_int(ctx.stack.pop()), uint_to_int(ctx.stack.pop())
     ctx.stack.push(int_to_uint(a // b) if b != 0 else 0)
 
+
 @insn(0x06)
 def MOD(ctx: ExecutionContext) -> None:
     a, b = ctx.stack.pop(), ctx.stack.pop()
     ctx.stack.push(a % b if b != 0 else 0)
+
 
 @insn(0x07)
 def SMOD(ctx: ExecutionContext) -> None:
     a, b = uint_to_int(ctx.stack.pop()), uint_to_int(ctx.stack.pop())
     ctx.stack.push(int_to_uint(a % b) if b != 0 else 0)
 
+
 @insn(0x08)
 def ADDMOD(ctx: ExecutionContext) -> None:
     a, b, mod = ctx.stack.pop(), ctx.stack.pop(), ctx.stack.pop()
     ctx.stack.push(((a + b) % mod) & MAX_UINT256)
+
 
 @insn(0x09)
 def MULMOD(ctx: ExecutionContext) -> None:
     a, b, mod = ctx.stack.pop(), ctx.stack.pop(), ctx.stack.pop()
     ctx.stack.push(((a * b) % mod) & MAX_UINT256)
 
+
 @insn(0x0A)
 def EXP(ctx: ExecutionContext) -> None:
     a, exponent = ctx.stack.pop(), ctx.stack.pop()
     ctx.stack.push((a ** exponent) & MAX_UINT256)
 
+
 @insn(0x0B)
 def SIGNEXTEND(ctx: ExecutionContext) -> None:
-    a, b = ctx.stack.pop(), ctx.stack.pop() # a size in bytes, b int value
+    a, b = ctx.stack.pop(), ctx.stack.pop()  # a size in bytes, b int value
     # take rightmost <a+1> bytes of integer b
-    b = b & ((1 << (a+1)*8) - 1)
+    b = b & ((1 << (a + 1) * 8) - 1)
 
     # check if integer b is signed
-    if (b >> ((a+1) * 8 - 1)) != 0:
+    if (b >> ((a + 1) * 8 - 1)) != 0:
         # create bitmask of all ones up to first bit of "b" (starting from left)
         # e.g. b = 1010 (0xA) => mask = 1111 1111 ... 1010
-        mask = MAX_UINT256 ^ ((1 << (a+1)*8) - 1)
+        mask = MAX_UINT256 ^ ((1 << (a + 1) * 8) - 1)
 
         # set all bits left from "b" to one
         b = b | mask
 
     ctx.stack.push(b)
 
+
 @insn(0x10)
 def LT(ctx: ExecutionContext) -> None:
     a, b = ctx.stack.pop(), ctx.stack.pop()
     ctx.stack.push(1 if a < b else 0)
+
 
 @insn(0x11)
 def GT(ctx: ExecutionContext) -> None:
     a, b = ctx.stack.pop(), ctx.stack.pop()
     ctx.stack.push(1 if a > b else 0)
 
+
 @insn(0x12)
 def SLT(ctx: ExecutionContext) -> None:
     a, b = uint_to_int(ctx.stack.pop()), uint_to_int(ctx.stack.pop())
     ctx.stack.push(1 if a < b else 0)
+
 
 @insn(0x13)
 def SGT(ctx: ExecutionContext) -> None:
     a, b = uint_to_int(ctx.stack.pop()), uint_to_int(ctx.stack.pop())
     ctx.stack.push(1 if a > b else 0)
 
+
 @insn(0x14)
 def EQ(ctx: ExecutionContext) -> None:
     ctx.stack.push(1 if ctx.stack.pop() == ctx.stack.pop() else 0)
+
 
 @insn(0x15)
 def ISZERO(ctx: ExecutionContext) -> None:
     ctx.stack.push(1 if ctx.stack.pop() == 0 else 0)
 
+
 @insn(0x16)
 def AND(ctx: ExecutionContext) -> None:
     ctx.stack.push((ctx.stack.pop() & ctx.stack.pop()))
+
 
 @insn(0x17)
 def OR(ctx: ExecutionContext) -> None:
     ctx.stack.push((ctx.stack.pop() | ctx.stack.pop()))
 
+
 @insn(0x18)
 def XOR(ctx: ExecutionContext) -> None:
     ctx.stack.push((ctx.stack.pop() ^ ctx.stack.pop()))
 
+
 @insn(0x19)
 def NOT(ctx: ExecutionContext) -> None:
     ctx.stack.push(MAX_UINT256 ^ ctx.stack.pop())
+
 
 @insn(0x1A)
 def BYTE(ctx: ExecutionContext) -> None:
@@ -224,20 +305,24 @@ def BYTE(ctx: ExecutionContext) -> None:
     else:
         ctx.stack.push(0)
 
+
 @insn(0x1B)
 def SHL(ctx: ExecutionContext) -> None:
     a, b = ctx.stack.pop(), ctx.stack.pop()
     ctx.stack.push(0 if a >= 256 else ((b << a) % 2 ** 256))
+
 
 @insn(0x1C)
 def SHR(ctx: ExecutionContext) -> None:
     a, b = ctx.stack.pop(), ctx.stack.pop()
     ctx.stack.push(b >> a)
 
+
 @insn(0x1D)
 def SAR(ctx: ExecutionContext) -> None:
     shift, signed_value = ctx.stack.pop(), uint_to_int(ctx.stack.pop())
     ctx.stack.push(int_to_uint(signed_value >> shift))
+
 
 @insn(0x20)
 def SHA3(ctx: ExecutionContext) -> None:
@@ -245,46 +330,68 @@ def SHA3(ctx: ExecutionContext) -> None:
     content = ctx.memory.load_range(offset, size)
     ctx.stack.push(int.from_bytes(keccak(content), "big"))
 
+
 # TODO: placeholder for now
 @insn(0x34)
 def CALLVALUE(ctx: ExecutionContext) -> None:
     ctx.stack.push(0)
 
+
 @insn(0x35)
 def CALLDATALOAD(ctx: ExecutionContext) -> None:
     ctx.stack.push(ctx.calldata.read_word(ctx.stack.pop()))
+
 
 @insn(0x36)
 def CALLDATASIZE(ctx: ExecutionContext) -> None:
     ctx.stack.push(len(ctx.calldata))
 
+
 @insn(0x37)
 def CALLDATACOPY(ctx: ExecutionContext) -> None:
     dest_offset, offset, size = ctx.stack.pop(), ctx.stack.pop(), ctx.stack.pop()
     for pos in range((size / 32).__ceil__()):
-        ctx.memory.store_word(
-            dest_offset + pos * 32, ctx.calldata.read_word(offset + pos * 32)
-        )
+        ctx.memory.store_word(dest_offset + pos * 32, ctx.calldata.read_word(offset + pos * 32))
+
+
+@insn(0x3C)
+def EXTCODECOPY(ctx: ExecutionContext) -> None:
+    address, dest_offset, offset, size = (
+        ctx.stack.pop(),
+        ctx.stack.pop(),
+        ctx.stack.pop(),
+        ctx.stack.pop(),
+    )
+
+    # TODO: placeholder for now, insert dummy bytes in the target memory
+    for i in range(size):
+        ctx.memory.store(dest_offset + i, 0x42)
+
 
 @insn(0x50)
 def POP(ctx: ExecutionContext) -> None:
     ctx.stack.pop()
 
+
 @insn(0x51)
 def MLOAD(ctx: ExecutionContext) -> None:
     ctx.stack.push(ctx.memory.load_word(ctx.stack.pop()))
+
 
 @insn(0x52)
 def MSTORE(ctx: ExecutionContext) -> None:
     ctx.memory.store_word(offset=ctx.stack.pop(), value=ctx.stack.pop())
 
+
 @insn(0x53)
 def MSTORE8(ctx: ExecutionContext) -> None:
     ctx.memory.store(offset=ctx.stack.pop(), value=ctx.stack.pop() % 256)
 
+
 @insn(0x54)
 def SLOAD(ctx: ExecutionContext) -> None:
     ctx.stack.push(ctx.storage.get(slot=ctx.stack.pop()))
+
 
 @insn(0x55)
 def SSTORE(ctx: ExecutionContext) -> None:
@@ -297,9 +404,11 @@ def _do_jump(ctx: ExecutionContext, target_pc: int) -> None:
     else:
         ctx.stop(success=False)
 
+
 @insn(0x56)
 def JUMP(ctx: ExecutionContext) -> None:
     _do_jump(ctx, ctx.stack.pop())
+
 
 @insn(0x57)
 def JUMPI(ctx: ExecutionContext) -> None:
@@ -307,58 +416,33 @@ def JUMPI(ctx: ExecutionContext) -> None:
     if cond != 0:
         _do_jump(ctx, target_pc)
 
+
 @insn(0x58)
 def PC(ctx: ExecutionContext) -> None:
-    '''Get the value of the program counter prior to the increment corresponding to this instruction.'''
+    """Get the value of the program counter prior to the increment corresponding to this instruction."""
     ctx.stack.push(ctx.pc - 1)
+
 
 @insn(0x59)
 def MSIZE(ctx: ExecutionContext) -> None:
     ctx.stack.push(32 * ctx.memory.active_words())
 
+
 # TODO: placeholder for now
 @insn(0x5A)
 def GAS(ctx: ExecutionContext) -> None:
-    '''Get the amount of available gas, including the corresponding reduction for the cost of this instruction.'''
+    """Get the amount of available gas, including the corresponding reduction for the cost of this instruction."""
     ctx.stack.push(MAX_UINT256)
+
 
 @insn(0x5B)
 def JUMPDEST(ctx: ExecutionContext) -> None:
-    '''Mark a valid destination for jumps. This operation has no effect on machine state during execution.'''
+    """Mark a valid destination for jumps. This operation has no effect on machine state during execution."""
     pass
 
-PUSH1 = insn(0x60, 'PUSH1')(lambda ctx: ctx.stack.push(ctx.read_code(1)))
-PUSH2 = insn(0x61, 'PUSH2')(lambda ctx: ctx.stack.push(ctx.read_code(2)))
-PUSH3 = insn(0x62, 'PUSH3')(lambda ctx: ctx.stack.push(ctx.read_code(3)))
-PUSH4 = insn(0x63, 'PUSH4')(lambda ctx: ctx.stack.push(ctx.read_code(4)))
-PUSH5 = insn(0x64, 'PUSH5')(lambda ctx: ctx.stack.push(ctx.read_code(5)))
-PUSH6 = insn(0x65, 'PUSH6')(lambda ctx: ctx.stack.push(ctx.read_code(6)))
-PUSH7 = insn(0x66, 'PUSH7')(lambda ctx: ctx.stack.push(ctx.read_code(7)))
-PUSH8 = insn(0x67, 'PUSH8')(lambda ctx: ctx.stack.push(ctx.read_code(8)))
-PUSH9 = insn(0x68, 'PUSH9')(lambda ctx: ctx.stack.push(ctx.read_code(9)))
-PUSH10 = insn(0x69, 'PUSH10')(lambda ctx: ctx.stack.push(ctx.read_code(10)))
-PUSH11 = insn(0x6A, 'PUSH11')(lambda ctx: ctx.stack.push(ctx.read_code(11)))
-PUSH12 = insn(0x6B, 'PUSH12')(lambda ctx: ctx.stack.push(ctx.read_code(12)))
-PUSH13 = insn(0x6C, 'PUSH13')(lambda ctx: ctx.stack.push(ctx.read_code(13)))
-PUSH14 = insn(0x6D, 'PUSH14')(lambda ctx: ctx.stack.push(ctx.read_code(14)))
-PUSH15 = insn(0x6E, 'PUSH15')(lambda ctx: ctx.stack.push(ctx.read_code(15)))
-PUSH16 = insn(0x6F, 'PUSH16')(lambda ctx: ctx.stack.push(ctx.read_code(16)))
-PUSH17 = insn(0x70, 'PUSH17')(lambda ctx: ctx.stack.push(ctx.read_code(17)))
-PUSH18 = insn(0x71, 'PUSH18')(lambda ctx: ctx.stack.push(ctx.read_code(18)))
-PUSH19 = insn(0x72, 'PUSH19')(lambda ctx: ctx.stack.push(ctx.read_code(19)))
-PUSH20 = insn(0x73, 'PUSH20')(lambda ctx: ctx.stack.push(ctx.read_code(20)))
-PUSH21 = insn(0x74, 'PUSH21')(lambda ctx: ctx.stack.push(ctx.read_code(21)))
-PUSH22 = insn(0x75, 'PUSH22')(lambda ctx: ctx.stack.push(ctx.read_code(22)))
-PUSH23 = insn(0x76, 'PUSH23')(lambda ctx: ctx.stack.push(ctx.read_code(23)))
-PUSH24 = insn(0x77, 'PUSH24')(lambda ctx: ctx.stack.push(ctx.read_code(24)))
-PUSH25 = insn(0x78, 'PUSH25')(lambda ctx: ctx.stack.push(ctx.read_code(25)))
-PUSH26 = insn(0x79, 'PUSH26')(lambda ctx: ctx.stack.push(ctx.read_code(26)))
-PUSH27 = insn(0x7A, 'PUSH27')(lambda ctx: ctx.stack.push(ctx.read_code(27)))
-PUSH28 = insn(0x7B, 'PUSH28')(lambda ctx: ctx.stack.push(ctx.read_code(28)))
-PUSH29 = insn(0x7C, 'PUSH29')(lambda ctx: ctx.stack.push(ctx.read_code(29)))
-PUSH30 = insn(0x7D, 'PUSH30')(lambda ctx: ctx.stack.push(ctx.read_code(30)))
-PUSH31 = insn(0x7E, 'PUSH31')(lambda ctx: ctx.stack.push(ctx.read_code(31)))
-PUSH32 = insn(0x7F, 'PUSH32')(lambda ctx: ctx.stack.push(ctx.read_code(32)))
+# register PUSH instructions
+for i in range(0, 32):
+    REGISTRY.add(Instruction(PUSH1_OPCODE + i, "PUSH{}".format(i + 1)))
 
 DUP1 = insn(0x80, "DUP1")(lambda ctx: ctx.stack.push(ctx.stack.peek(0)))
 DUP2 = insn(0x81, "DUP2")(lambda ctx: ctx.stack.push(ctx.stack.peek(1)))
@@ -400,20 +484,40 @@ def RETURN(ctx: ExecutionContext) -> None:
     ctx.set_return_data(offset, length)
     ctx.stop(success=True)
 
+
 # TODO: no-op for now
 @insn(0xFD)
 def REVERT(ctx: ExecutionContext) -> None:
     offset, length = ctx.stack.pop(), ctx.stack.pop()
     ctx.stop(success=False)
 
+
 # TODO: no-op for now. Equivalent to REVERT(0, 0) but consumes all available gas
 @insn(0xFE)
 def INVALID(ctx: ExecutionContext) -> None:
     ctx.stop(success=False)
 
+
 if os.getenv("DEBUG"):
     print(f"📈 {len(REGISTRY)} instructions completed")
     print(REGISTRY.by_code)
+
+
+def PUSH(value: int) -> Instruction:
+    """
+    Returns the PUSH instruction for the given value.
+    """
+    # get the size of value in bytes (1 minimum)
+    width = ceil(value.bit_length() / 8) or 1
+
+    push_with_no_operand = REGISTRY[0x60 + width - 1]
+    push_with_operand = Instruction(
+        push_with_no_operand.opcode,
+        push_with_no_operand.name,
+        [Operand(width, value)]
+    )
+    return push_with_operand
+
 
 def decode_opcode(context: ExecutionContext) -> Instruction:
     if context.pc < 0:
@@ -429,14 +533,21 @@ def decode_opcode(context: ExecutionContext) -> Instruction:
     if instruction is None:
         raise UnknownOpcode(opcode=opcode)
 
+    # if it's a push, materialize a new instruction with the correct operand
+    if instruction.is_push():
+        print(f'decoding PUSH{instruction.push_width()}')
+        push_width = instruction.push_width()
+        value = context.read_code(push_width)
+        return PUSH(value)
+
     return instruction
 
 
-def assemble(instructions: Sequence[Union[Instruction, int]], print_bin=True) -> bytes:
+def assemble(instructions: Sequence[Union[Instruction, int, object]], print_bin=True) -> bytes:
     result = bytes()
     for item in instructions:
         if isinstance(item, Instruction):
-            result += bytes([item.opcode])
+            result += item.to_bytes()
         elif isinstance(item, int):
             result += int_to_bytes(item)
         elif callable(item):
