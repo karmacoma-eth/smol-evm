@@ -36,6 +36,25 @@ def test_jump_into_push_arg():
     ctx = run(code)
     assert ctx.success is False
 
+def test_jump_over_data():
+    """can't jump over sneaky data"""
+    # 600456605b00
+    code = assemble([
+        PUSH(4),
+        JUMP,
+
+        # this PUSH1 is not reachable but it "eats" the JUMPDEST,
+        # which makes it not a valid JUMPDEST
+        PUSH1_OPCODE,
+
+        JUMPDEST,
+        STOP
+    ])
+    ctx = run(code, verbose=True)
+    assert ctx.success is False
+    assert ctx.reason is not None and ctx.reason.startswith('Invalid jump')
+    assert ctx.pc == 3
+
 def test_invalid_jump_dest_in_branch_not_taken():
     """we know we can check for invalid jump destinations, but what if we don't take the branch?"""
     # 6000602a57

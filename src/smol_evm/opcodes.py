@@ -34,6 +34,11 @@ class Operand:
     def __repr__(self) -> str:
         return f"Operand({self.width}, {self.value})"
 
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, Operand):
+            return False
+        return self.width == other.width and self.value == other.value
+
 
 class Instruction:
     def __init__(self, opcode: int, name: str, operands: Sequence[Operand] = ()):
@@ -50,6 +55,11 @@ class Instruction:
             if self.operands
             else f'Instruction({self.opcode}, "{self.name}")'
         )
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, Instruction):
+            return False
+        return self.opcode == other.opcode and self.operands == other.operands
 
     def execute(self, context: ExecutionContext) -> None:
         if self.is_push():
@@ -75,7 +85,7 @@ class Instruction:
         """
         Returns the bytes that represent this instruction.
         """
-        if self.is_push():
+        if self.operands:
             return bytes([self.opcode]) + int_to_bytes(self.operands[0].value)
         else:
             return bytes([self.opcode])
@@ -402,7 +412,7 @@ def _do_jump(ctx: ExecutionContext, target_pc: int) -> None:
     if target_pc in ctx.jumpdests:
         ctx.set_program_counter(target_pc)
     else:
-        ctx.stop(success=False)
+        ctx.stop(success=False, reason=f"Invalid jump to {target_pc}, not in valid jumpdests {ctx.jumpdests}")
 
 
 @insn(0x56)
@@ -442,7 +452,8 @@ def JUMPDEST(ctx: ExecutionContext) -> None:
 
 # register PUSH instructions
 for i in range(0, 32):
-    REGISTRY.add(Instruction(PUSH1_OPCODE + i, "PUSH{}".format(i + 1)))
+    PUSHi = Instruction(PUSH1_OPCODE + i, "PUSH{}".format(i + 1))
+    REGISTRY.add(PUSHi)
 
 DUP1 = insn(0x80, "DUP1")(lambda ctx: ctx.stack.push(ctx.stack.peek(0)))
 DUP2 = insn(0x81, "DUP2")(lambda ctx: ctx.stack.push(ctx.stack.peek(1)))
@@ -535,7 +546,6 @@ def decode_opcode(context: ExecutionContext) -> Instruction:
 
     # if it's a push, materialize a new instruction with the correct operand
     if instruction.is_push():
-        print(f'decoding PUSH{instruction.push_width()}')
         push_width = instruction.push_width()
         value = context.read_code(push_width)
         return PUSH(value)
