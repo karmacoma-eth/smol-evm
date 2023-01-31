@@ -68,12 +68,17 @@ class ExecutionContext:
         self.calldata = calldata if calldata else Calldata()
         self.storage = storage if storage else Storage()
 
+        # human-readable reason for stopping execution
+        self.reason = None
+
     def set_return_data(self, offset: int, length: int) -> None:
         self.success = True
         self.returndata = self.memory.load_range(offset, length)
 
-    def stop(self, success: bool) -> None:
+    def stop(self, success: bool, reason: str = '') -> None:
         self.success = success
+        if reason:
+            self.reason = reason
 
     def is_stopped(self) -> bool:
         return self.success is not None
@@ -82,9 +87,13 @@ class ExecutionContext:
         """
         Returns the next num_bytes from the code buffer (at index pc) as an integer and advances pc by num_bytes.
         """
-        value = int.from_bytes(
-            self.code[self.pc : self.pc + num_bytes], byteorder="big"
-        )
+        i, j = self.pc, self.pc + num_bytes
+        value = int.from_bytes(self.code[i:j], byteorder="big")
+
+        if j > len(self.code):
+            # bytes after the end of the code buffer are treated as 0
+            value = value << (8 * (j - len(self.code)))
+
         self.pc += num_bytes
         return value
 
