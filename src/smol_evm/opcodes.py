@@ -1,5 +1,6 @@
 import functools
 import os
+import sys
 
 from dataclasses import dataclass
 from typing import Callable, Optional, Sequence, Union
@@ -569,6 +570,41 @@ def assemble(instructions: Sequence[Union[Instruction, int, object]], print_bin=
         elif callable(item):
             _instruction = REGISTRY[item]
             result += bytes([_instruction.opcode])
+        elif isinstance(item, str):
+            # assume this is our assembler syntax, as produced by disasm.py
+            # e.g. <offset>: <OPCODE|UNKNOWN|DATA> [operand] [# comment]
+            if item.startswith("#"):
+                continue
+
+            comment_start = item.find("#")
+            if comment_start != -1:
+                item = item[:comment_start]
+
+            offset_str, rest = item.split(":")
+            offset = int(offset_str.strip(), 16)
+            if offset != len(result):
+                # print to stderr
+                print(f"Warning: expected to write at offset {offset_str}, but currently at {len(result):04x}", file=sys.stderr)
+
+            print(f"rest: {rest}")
+            tokens = rest.strip().split(" ", 2)
+            instruction_str = tokens[0].strip()
+            if instruction_str == "UNKNOWN" or instruction_str == "DATA":
+                hex_str = tokens[1].strip()
+                result += bytes.fromhex(hex_str[2:] if hex_str.startswith("0x") else hex_str)
+
+            else:
+                instruction = REGISTRY[instruction_str]
+
+                if not instruction:
+                    raise ValueError(f"Unknown instruction {instruction_str}")
+
+                result += instruction.opcode.to_bytes(1, "big")
+
+                if len(tokens) > 1:
+                    operand = tokens[1].strip()
+                    result += bytes.fromhex(operand[2:] if operand.startswith("0x") else operand)
+
         else:
             raise TypeError(f"Unexpected {type(item)} in {instructions}")
 
