@@ -4,29 +4,21 @@ import argparse
 import os
 
 from smol_evm.context import ExecutionContext
-from smol_evm.opcodes import decode_opcode, STOP, REVERT, RETURN, INVALID, JUMPDEST, UnknownOpcode
+from smol_evm.opcodes import decode_opcode, STOP, REVERT, RETURN, INVALID, JUMPDEST
+
+from typing import Sequence
+
+TERMINATING = set((STOP.opcode, REVERT.opcode, RETURN.opcode, INVALID.opcode))
 
 
 def strip_0x(s: str):
     return s[2:] if s and s.startswith("0x") else s
 
 
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--code", help="hex data of the code to run", required=True)
-    args = parser.parse_args()
+def disassemble(code: bytes) -> Sequence[str]:
+    lines = []
 
-    # is it a file? if so, load the contents
-    if os.path.exists(args.code):
-        with open(args.code, "r") as f:
-            code = bytes.fromhex(strip_0x(f.read()))
-
-    else:
-        code = bytes.fromhex(strip_0x(args.code))
-
-    terminating = set((STOP.opcode, REVERT.opcode, RETURN.opcode, INVALID.opcode))
     reading_data = False
-
     context = ExecutionContext(code=code)
     while context.pc < len(code):
         original_pc = context.pc
@@ -49,24 +41,37 @@ def main():
             data = [insn.opcode]
             data.extend(push_data)
             for i, d in enumerate(data):
-                print(f"{original_pc + i:04x}: DATA 0x{d:02x}")
+                lines.append(f"{original_pc + i:04x}: DATA 0x{d:02x}")
 
         else:
             if insn.is_push() and len(push_data) < insn.push_width():
                 # make sure we handle truncated PUSH arguments
-                print(f"{pc_str}: PUSH{insn.push_width()} 0x{push_data.hex()} # truncated")
-                break
+                lines.append(f"{pc_str}: PUSH{insn.push_width()} 0x{push_data.hex()} # truncated")
 
             else:
-                print(f"{pc_str}: {insn}")
+                lines.append(f"{pc_str}: {insn}")
 
-            if insn.opcode in terminating:
+            if insn.opcode in TERMINATING:
                 reading_data = True
 
-# options for 6142:
-# - DATA 61 ... # unfinished PUSH
-# - PUSH2 4200  # semantically correct, but won't be assembled symmetrically
-# - PUSH2 42    # if we assemble it literally, can be symmetric
+    return lines
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--code", help="hex data of the code to run", required=True)
+    args = parser.parse_args()
+
+    # is it a file? if so, load the contents
+    if os.path.exists(args.code):
+        with open(args.code, "r") as f:
+            code = bytes.fromhex(strip_0x(f.read()))
+
+    else:
+        code = bytes.fromhex(strip_0x(args.code))
+
+    print('\n'.join(disassemble(code)))
+
 
 if __name__ == "__main__":
     main()

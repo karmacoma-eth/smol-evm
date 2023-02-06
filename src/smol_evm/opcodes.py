@@ -546,7 +546,7 @@ def decode_opcode(context: ExecutionContext) -> Instruction:
     opcode = context.read_code(1)
     instruction = REGISTRY[opcode]
     if instruction is None:
-        return Instruction(opcode, f"UNKNOWN_{opcode:02x}")
+        return Instruction(opcode, f"UNKNOWN 0x{opcode:02x}")
 
     # if it's a push, materialize a new instruction with the correct operand
     if instruction.is_push():
