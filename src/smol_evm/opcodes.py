@@ -39,6 +39,11 @@ class Operand:
             return False
         return self.width == other.width and self.value == other.value
 
+    def __iter__(self):
+        value_bytes = int_to_bytes(self.value)
+        # pad the value with zeros to the width of the operand
+        return iter(bytes(self.width - len(value_bytes)) + value_bytes)
+
 
 class Instruction:
     def __init__(self, opcode: int, name: str, operands: Sequence[Operand] = ()):
@@ -101,11 +106,9 @@ class InstructionRegistry:
         self.by_name = {}
         self.by_func = {}
 
-    def __getitem__(self, item: Union[int, str, object]) -> Instruction:
+    def __getitem__(self, item: Union[int, str, object]) -> Optional[Instruction]:
         if isinstance(item, int):
             retrieved = self.by_code[item]
-            if retrieved is None:
-                raise UnknownOpcode(item)
             return retrieved
 
         if isinstance(item, str):
@@ -453,6 +456,7 @@ def JUMPDEST(ctx: ExecutionContext) -> None:
 # register PUSH instructions
 for i in range(0, 32):
     PUSHi = Instruction(PUSH1_OPCODE + i, "PUSH{}".format(i + 1))
+    # print(f"registering {PUSHi.name} with opcode {PUSHi.opcode:02x}")
     REGISTRY.add(PUSHi)
 
 DUP1 = insn(0x80, "DUP1")(lambda ctx: ctx.stack.push(ctx.stack.peek(0)))
@@ -516,7 +520,7 @@ if os.getenv("DEBUG"):
 
 def PUSH(value: int) -> Instruction:
     """
-    Returns the PUSH instruction for the given value.
+    Returns the PUSH instruction for the given value, using the smallest possible PUSH instruction
     """
     # get the size of value in bytes (1 minimum)
     width = ceil(value.bit_length() / 8) or 1
@@ -542,13 +546,15 @@ def decode_opcode(context: ExecutionContext) -> Instruction:
     opcode = context.read_code(1)
     instruction = REGISTRY[opcode]
     if instruction is None:
-        raise UnknownOpcode(opcode=opcode)
+        return Instruction(opcode, f"UNKNOWN_{opcode:02x}")
 
     # if it's a push, materialize a new instruction with the correct operand
     if instruction.is_push():
         push_width = instruction.push_width()
         value = context.read_code(push_width)
-        return PUSH(value)
+
+        # preserve the width from the opcode, even if the value has a smaller bit width
+        return Instruction(opcode, instruction.name, [Operand(push_width, value)])
 
     return instruction
 
