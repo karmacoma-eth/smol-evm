@@ -28,6 +28,7 @@ def disassemble(code: bytes) -> Sequence[str]:
         insn = decode_opcode(context)
         push_data = code[original_pc + 1 : original_pc + 1 + insn.push_width()] if insn.is_push() else b""
 
+        # switch back to code mode if we encounter a JUMPDEST
         reading_code = reading_code or insn.opcode is JUMPDEST.opcode
 
         if reading_code:

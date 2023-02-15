@@ -100,5 +100,5 @@ def test_living_dangerously():
 
 def test_fuzz_disasm():
     for i in range(100):
-        bytecode = os.urandom(16)
+        bytecode = os.urandom(i)
         assert bytecode == assemble(disassemble(bytecode))
