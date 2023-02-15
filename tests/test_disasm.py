@@ -79,3 +79,19 @@ def test_data_after_jump():
     assert code == assemble(disassembly)
 
 
+def test_living_dangerously():
+    code = assemble([CALLVALUE, JUMP, JUMPDEST, STOP, 1, 2, 3, JUMPDEST, SELFDESTRUCT])
+    disassembly = disassemble(code)
+    assert disassembly == [
+        '0000: CALLVALUE',
+        '0001: JUMP',
+        '0002: JUMPDEST',
+        '0003: STOP',
+        '0004: DATA 0x01',
+        '0005: DATA 0x02',
+        '0006: DATA 0x03',
+        '0007: JUMPDEST',
+        '0008: SELFDESTRUCT',
+    ]
+    assert code == assemble(disassembly)
+
