@@ -26,11 +26,7 @@ def disassemble(code: bytes) -> Sequence[str]:
 
         # increments pc by instruction length
         insn = decode_opcode(context)
-        push_data = code[original_pc + 1:original_pc + 1 + insn.push_width()] if insn.is_push() else []
-
-        # print()
-        # print("reading_data:", reading_data)
-        # print("decoded:", insn)
+        push_data = code[original_pc + 1:original_pc + 1 + insn.push_width()] if insn.is_push() else b''
 
         if insn.opcode == JUMPDEST.opcode:
             reading_data = False
