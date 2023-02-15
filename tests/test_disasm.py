@@ -1,3 +1,5 @@
+import os
+
 from disasm import disassemble
 from smol_evm.opcodes import *
 
@@ -95,3 +97,8 @@ def test_living_dangerously():
     ]
     assert code == assemble(disassembly)
 
+
+def test_fuzz_disasm():
+    for i in range(100):
+        bytecode = os.urandom(16)
+        assert bytecode == assemble(disassemble(bytecode))
