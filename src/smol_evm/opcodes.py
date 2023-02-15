@@ -513,6 +513,11 @@ def REVERT(ctx: ExecutionContext) -> None:
 def INVALID(ctx: ExecutionContext) -> None:
     ctx.stop(success=False)
 
+# TODO: no-op for now
+@insn(0xFF)
+def SELFDESTRUCT(ctx: ExecutionContext) -> None:
+    ctx.stop(success=True)
+
 
 if os.getenv("DEBUG"):
     print(f"📈 {len(REGISTRY)} instructions completed")
