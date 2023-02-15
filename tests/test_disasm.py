@@ -70,3 +70,12 @@ def test_handles_unknown_opcodes():
     disassembly = disassemble(code)
     assert disassembly == ['0000: UNKNOWN 0xfc', '0001: PUSH1 0xfc', '0003: STOP', '0004: DATA 0xfc']
     assert code == assemble(disassembly)
+
+
+def test_data_after_jump():
+    code = assemble([PUSH(0), JUMP, 1, 2, 3])
+    disassembly = disassemble(code)
+    assert disassembly == ['0000: PUSH1 0x00', '0002: JUMP', '0003: DATA 0x01', '0004: DATA 0x02', '0005: DATA 0x03']
+    assert code == assemble(disassembly)
+
+
