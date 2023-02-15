@@ -18,7 +18,7 @@ def strip_0x(s: str):
 def disassemble(code: bytes) -> Sequence[str]:
     lines = []
 
-    reading_data = False
+    reading_code = True
     context = ExecutionContext(code=code)
     while context.pc < len(code):
         original_pc = context.pc
@@ -28,27 +28,24 @@ def disassemble(code: bytes) -> Sequence[str]:
         insn = decode_opcode(context)
         push_data = code[original_pc + 1:original_pc + 1 + insn.push_width()] if insn.is_push() else b''
 
-        if insn.opcode == JUMPDEST.opcode:
-            reading_data = False
+        reading_code = reading_code or insn.opcode is JUMPDEST.opcode
 
-        if reading_data:
+        if reading_code:
+            if insn.is_push() and len(push_data) < insn.push_width():
+                # make sure we handle truncated PUSH arguments
+                lines.append(f"{pc_str}: PUSH{insn.push_width()} 0x{push_data.hex()} # truncated")
+            else:
+                lines.append(f"{pc_str}: {insn}")
+
+            reading_code = insn.opcode not in TERMINATING
+
+        else:
             # just like the algorithm for valid jump destination validation,
             # we parse PUSH instructions and skip their arguments (so no JUMPDESTs can hide there)
             data = [insn.opcode]
             data.extend(push_data)
             for i, d in enumerate(data):
                 lines.append(f"{original_pc + i:04x}: DATA 0x{d:02x}")
-
-        else:
-            if insn.is_push() and len(push_data) < insn.push_width():
-                # make sure we handle truncated PUSH arguments
-                lines.append(f"{pc_str}: PUSH{insn.push_width()} 0x{push_data.hex()} # truncated")
-
-            else:
-                lines.append(f"{pc_str}: {insn}")
-
-            if insn.opcode in TERMINATING:
-                reading_data = True
 
     return lines
 
