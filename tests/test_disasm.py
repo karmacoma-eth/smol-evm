@@ -14,7 +14,7 @@ def test_simple():
 def test_medatata_parsed_as_data():
     code = assemble([REVERT, 1, 2, 3])
     disassembly = disassemble(code)
-    assert disassembly == ["0000: REVERT", "0001: DATA 0x01", "0002: DATA 0x02", "0003: DATA 0x03"]
+    assert disassembly == ["0000: REVERT", "0001: DATA 0x010203"]
     assert code == assemble(disassembly)
 
 
@@ -23,9 +23,7 @@ def test_jumpdest_in_metadata():
     disassembly = disassemble(code)
     assert disassembly == [
         "0000: REVERT",
-        "0001: DATA 0x01",
-        "0002: DATA 0x02",
-        "0003: DATA 0x03",
+        "0001: DATA 0x010203",
         "0004: JUMPDEST",
     ]
     assert code == assemble(disassembly)
@@ -63,7 +61,7 @@ def test_truncated_push_handled_in_metadata():
     code = code[:-1]
 
     disassembly = disassemble(code)
-    assert disassembly == ['0000: REVERT', '0001: DATA 0x01', '0002: DATA 0x61', '0003: DATA 0x5b']
+    assert disassembly == ['0000: REVERT', '0001: DATA 0x01615b']
     assert code == assemble(disassembly)
 
 
@@ -77,7 +75,7 @@ def test_handles_unknown_opcodes():
 def test_data_after_jump():
     code = assemble([PUSH(0), JUMP, 1, 2, 3])
     disassembly = disassemble(code)
-    assert disassembly == ['0000: PUSH1 0x00', '0002: JUMP', '0003: DATA 0x01', '0004: DATA 0x02', '0005: DATA 0x03']
+    assert disassembly == ['0000: PUSH1 0x00', '0002: JUMP', '0003: DATA 0x010203']
     assert code == assemble(disassembly)
 
 
@@ -89,9 +87,7 @@ def test_living_dangerously():
         '0001: JUMP',
         '0002: JUMPDEST',
         '0003: STOP',
-        '0004: DATA 0x01',
-        '0005: DATA 0x02',
-        '0006: DATA 0x03',
+        '0004: DATA 0x010203',
         '0007: JUMPDEST',
         '0008: SELFDESTRUCT',
     ]
