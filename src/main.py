@@ -47,6 +47,9 @@ def main():
         "--calldata",
         help="hex data to use as input, e.g. 0xcfae3217",
     )
+    parser.add_argument("--verbose", help="print the full trace", action="store_true")
+    parser.add_argument("--print-stack", help="enables stack output in the trace", action="store_true")
+    parser.add_argument("--print-memory", help="enables memory output in the trace", action="store_true")
     args = parser.parse_args()
     ret = run_with_args(args)
     print(f"0x{ret.hex()}")
