@@ -19,8 +19,8 @@ def load_bytecode(code: str) -> bytes:
 
 
 @click.group()
-@click.option("--debug/--no-debug", default=False)
-def cli(debug):
+# @click.option("--debug/--no-debug", default=False)
+def cli():
     # TODO: set logging level
     pass
 
@@ -32,7 +32,7 @@ def cli(debug):
 @click.option("--stack/--no-stack", help="enables stack output in the trace", default=False)
 @click.option("--memory/--no-memory", help="enables memory output in the trace", default=False)
 def run(code: str, calldata: str, trace: bool, stack: bool, memory: bool):
-    """Creates an EVM execution context and runs the given bytecode"""
+    """Execute bytecode"""
     code_bytes = load_bytecode(code)
     calldata_bytes = bytes.fromhex(strip_0x(calldata)) if calldata else bytes()
 
@@ -50,7 +50,7 @@ def run(code: str, calldata: str, trace: bool, stack: bool, memory: bool):
 @cli.command()
 @click.option("--code", help="bytecode as hex string, e.g. 6080604052", required=True)
 def disassemble(code: str):
-    """Disassembles the given bytecode"""
+    """Turn bytecode into assembly code"""
     code_bytes = load_bytecode(code)
     click.echo("\n".join(disasm.disassemble(code_bytes)))
 
@@ -58,5 +58,5 @@ def disassemble(code: str):
 @cli.command()
 @click.argument('input_file', type=click.File('r'))
 def assemble(input_file):
-    """Assembles the given source file and prints the bytecode"""
+    """Turn assembly code into bytecode"""
     smol_evm.opcodes.assemble(input_file.readlines(), print_bin=True)
