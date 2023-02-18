@@ -2,6 +2,7 @@ import click
 import os
 
 import smol_evm.runner
+import smol_evm.opcodes
 import disasm
 
 from smol_evm.utils import strip_0x
@@ -26,14 +27,6 @@ def cli(debug):
 
 @cli.command()
 @click.option("--code", help="bytecode as hex string, e.g. 6080604052", required=True)
-def disassemble(code: str):
-    """Disassembles the given bytecode"""
-    code_bytes = load_bytecode(code)
-    print("\n".join(disasm.disassemble(code_bytes)))
-
-
-@cli.command()
-@click.option("--code", help="bytecode as hex string, e.g. 6080604052", required=True)
 @click.option("--calldata", help="hex data to use as transaction input, e.g. cfae3217")
 @click.option("--trace/--no-trace", help="print the full instruction trace", default=True)
 @click.option("--stack/--no-stack", help="enables stack output in the trace", default=False)
@@ -51,4 +44,19 @@ def run(code: str, calldata: str, trace: bool, stack: bool, memory: bool):
         print_memory=memory,
     ).returndata
 
-    print(f"0x{ret.hex()}")
+    click.echo(f"0x{ret.hex()}")
+
+
+@cli.command()
+@click.option("--code", help="bytecode as hex string, e.g. 6080604052", required=True)
+def disassemble(code: str):
+    """Disassembles the given bytecode"""
+    code_bytes = load_bytecode(code)
+    click.echo("\n".join(disasm.disassemble(code_bytes)))
+
+
+@cli.command()
+@click.argument('input_file', type=click.File('r'))
+def assemble(input_file):
+    """Assembles the given source file and prints the bytecode"""
+    smol_evm.opcodes.assemble(input_file.readlines(), print_bin=True)

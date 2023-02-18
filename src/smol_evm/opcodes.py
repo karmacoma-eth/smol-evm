@@ -585,16 +585,21 @@ def assemble(instructions: Sequence[Union[Instruction, int, object]], print_bin=
             if comment_start != -1:
                 item = item[:comment_start]
 
-            offset_str, rest = item.split(":")
-            offset = int(offset_str.strip(), 16)
-            if offset != len(result):
-                # print to stderr
-                print(
-                    f"Warning: expected to write at offset {offset_str}, but currently at {len(result):04x}",
-                    file=sys.stderr,
-                )
+            tokens = item.split(":", 2)
+            if len(tokens) > 2:
+                raise ValueError(f"Invalid item: {item}")
+            elif len(tokens) == 2:
+                offset_str, rest = item.split(":")
+                offset = int(offset_str.strip(), 16)
+                if offset != len(result):
+                    # print to stderr
+                    print(
+                        f"Warning: expected to write at offset {offset_str}, but currently at {len(result):04x}",
+                        file=sys.stderr,
+                    )
+            else:
+                rest = item
 
-            print(f"rest: {rest}")
             tokens = rest.strip().split(" ", 2)
             instruction_str = tokens[0].strip()
             if instruction_str == "UNKNOWN" or instruction_str == "DATA":
