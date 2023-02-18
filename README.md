@@ -16,7 +16,7 @@ $ source venv/bin/activate
 (venv) $ python -m pip install smol-evm
 ```
 
-> Run the CLI
+Run the CLI:
 
 ```
 $ smol-evm --help
@@ -33,14 +33,14 @@ Commands:
 $ smol-evm run
 ````
 
-> Execute bytecode
+Execute bytecode:
 
 ```bash
 $ smol-evm run --code 602a6000526001601ff3 --no-trace
 0x2a
 ```
 
-> Disassemble bytecode
+Disassemble bytecode:
 
 ```bash
 $ smol-evm disassemble --code 602a6000526001601ff3
@@ -52,16 +52,14 @@ $ smol-evm disassemble --code 602a6000526001601ff3
 0009: RETURN
 ```
 
-> Assemble bytecode
+Assemble bytecode:
 
 ```bash
 smol-evm disassemble --code 602a6000526001601ff3 | smol-evm assemble -
 602a6000526001601ff3
 ```
 
-> Use as a library
-
-⚠️ the interface is very much not stable and is subject to frequent changes
+Use as a library:
 
 ```bash
 python
@@ -69,6 +67,8 @@ python
 >>> code = assemble([PC, DUP1, MSTORE])
 588052
 ```
+
+⚠️ _please note that the interface is very much not stable and is subject to frequent changes_
 
 # Developer mode
 
