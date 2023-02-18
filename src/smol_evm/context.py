@@ -46,18 +46,14 @@ class Calldata:
         return self.data[offset] if offset < len(self.data) else 0
 
     def read_word(self, offset: int) -> int:
-        return int.from_bytes(
-            [self.read_byte(x) for x in range(offset, offset + 32)], "big"
-        )
+        return int.from_bytes([self.read_byte(x) for x in range(offset, offset + 32)], "big")
 
     def __len__(self) -> int:
         return len(self.data)
 
 
 class ExecutionContext:
-    def __init__(
-        self, code=bytes(), pc=0, stack=None, memory=None, calldata=None, storage=None
-    ) -> None:
+    def __init__(self, code=bytes(), pc=0, stack=None, memory=None, calldata=None, storage=None) -> None:
         self.code = code
         self.stack = stack if stack else Stack()
         self.memory = memory if memory else Memory()
@@ -75,7 +71,7 @@ class ExecutionContext:
         self.success = True
         self.returndata = self.memory.load_range(offset, length)
 
-    def stop(self, success: bool, reason: str = '') -> None:
+    def stop(self, success: bool, reason: str = "") -> None:
         self.success = success
         if reason:
             self.reason = reason

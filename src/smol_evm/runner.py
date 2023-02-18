@@ -46,13 +46,9 @@ def run(
         if verbose:
             print(f"{instruction} @ pc={pc_before}")
             if print_stack:
-                print(
-                    f"stack: {' '.join(hex(x)[2:] for x in reversed(context.stack.stack))}"
-                )
+                print(f"stack: {' '.join(hex(x)[2:] for x in reversed(context.stack.stack))}")
             if print_memory:
-                print(
-                    f"memory: [{' '.join(hex(x)[2:] for x in context.memory.memory)}]"
-                )
+                print(f"memory: [{' '.join(hex(x)[2:] for x in context.memory.memory)}]")
 
             print()
 
