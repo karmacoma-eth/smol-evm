@@ -2,9 +2,73 @@
 
 👨‍🔬 An extensible Python implementation of the Ethereum yellow paper from scratch.
 
-# Installation
+Write-up with examples:
 
-To run the EVM from scratch:
+[Building an EVM from scratch](https://karmacoma.notion.site/Building-an-EVM-from-scratch-series-90ee3c827b314e0599e705a1152eecf9) [karmacoma.notion.so]
+
+# Getting started
+
+> Install smol-evm
+
+```
+pip install smol-evm
+```
+
+> Run the CLI
+
+```
+$ smol-evm --help
+Usage: smol-evm [OPTIONS] COMMAND [ARGS]...
+
+Options:
+  --debug / --no-debug
+  --help                Show this message and exit.
+
+Commands:
+  disassemble  Disassembles the given bytecode
+  run          Creates an EVM execution context and runs the given bytecode
+
+$ smol-evm run
+````
+
+> Execute bytecode
+
+```bash
+$ smol-evm run --code 602a6000526001601ff3 --no-trace
+0x2a
+```
+
+> Disassemble bytecode
+
+```bash
+$ smol-evm disassemble --code 602a6000526001601ff3
+0000: PUSH1 0x2a
+0002: PUSH1 0x00
+0004: MSTORE
+0005: PUSH1 0x01
+0007: PUSH1 0x1f
+0009: RETURN
+```
+
+> Assemble bytecode
+
+```bash
+smol-evm disassemble --code 602a6000526001601ff3 | smol-evm assemble -
+602a6000526001601ff3
+```
+
+> Use as a library
+
+⚠️ the interface is very much not stable and is subject to frequent changes
+
+```bash
+python
+>>> from smol_evm.opcodes import *
+>>> code = assemble([PC, DUP1, MSTORE])
+588052
+```
+
+# Developer mode
 
 > Install Poetry
 
@@ -30,12 +94,7 @@ poetry run pytest -v
 poetry run black src
 ```
 
-Write-up with examples:
-
-[Building an EVM from scratch](https://karmacoma.notion.site/Building-an-EVM-from-scratch-series-90ee3c827b314e0599e705a1152eecf9) [karmacoma.notion.so]
-
-
-# Random scripts
+# Misc scripts
 
 ## raw_deployer.py
 
