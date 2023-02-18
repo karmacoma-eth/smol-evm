@@ -8,10 +8,12 @@ Write-up with examples:
 
 # Getting started
 
-> Install smol-evm
+Install smol-evm in [a virtual environment](https://realpython.com/python-virtual-environments-a-primer/)
 
 ```
-pip install smol-evm
+$ python3 -m venv venv
+$ source venv/bin/activate
+(venv) $ python -m pip install smol-evm
 ```
 
 > Run the CLI
