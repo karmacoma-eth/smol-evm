@@ -1,8 +1,11 @@
 [tool.poetry]
 name = "smol-evm"
 version = "0.1.0"
-description = ""
+description = "👨‍🔬 An extensible Python implementation of the Ethereum yellow paper from scratch."
 authors = ["karmacoma <karma@coma.lol>"]
+readme = "README.md"
+homepage = "https://github.com/karmacoma-eth/smol-evm"
+license = "MIT"
 
 [tool.poetry.dependencies]
 python = "^3.7"
@@ -20,3 +23,6 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.black]
 line-length = 119
+
+[project.scripts]
+smol-evm = "smol_evm.main"
