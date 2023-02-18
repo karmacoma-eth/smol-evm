@@ -12,7 +12,8 @@ from .exceptions import InvalidCodeOffset, UnknownOpcode, InvalidJumpDestination
 from .constants import MAX_UINT256
 
 PUSH1_OPCODE = 0x60
-PUSH32_OPCODE = 0x7f
+PUSH32_OPCODE = 0x7F
+
 
 class Operand:
     """
@@ -236,7 +237,7 @@ def MULMOD(ctx: ExecutionContext) -> None:
 @insn(0x0A)
 def EXP(ctx: ExecutionContext) -> None:
     a, exponent = ctx.stack.pop(), ctx.stack.pop()
-    ctx.stack.push((a ** exponent) & MAX_UINT256)
+    ctx.stack.push((a**exponent) & MAX_UINT256)
 
 
 @insn(0x0B)
@@ -323,7 +324,7 @@ def BYTE(ctx: ExecutionContext) -> None:
 @insn(0x1B)
 def SHL(ctx: ExecutionContext) -> None:
     a, b = ctx.stack.pop(), ctx.stack.pop()
-    ctx.stack.push(0 if a >= 256 else ((b << a) % 2 ** 256))
+    ctx.stack.push(0 if a >= 256 else ((b << a) % 2**256))
 
 
 @insn(0x1C)
@@ -454,6 +455,7 @@ def JUMPDEST(ctx: ExecutionContext) -> None:
     """Mark a valid destination for jumps. This operation has no effect on machine state during execution."""
     pass
 
+
 # register PUSH instructions
 for i in range(0, 32):
     PUSHi = Instruction(PUSH1_OPCODE + i, "PUSH{}".format(i + 1))
@@ -494,6 +496,7 @@ SWAP14 = insn(0x9D, "SWAP14")(lambda ctx: ctx.stack.swap(14))
 SWAP15 = insn(0x9E, "SWAP15")(lambda ctx: ctx.stack.swap(15))
 SWAP16 = insn(0x9F, "SWAP16")(lambda ctx: ctx.stack.swap(16))
 
+
 @insn(0xF3)
 def RETURN(ctx: ExecutionContext) -> None:
     offset, length = ctx.stack.pop(), ctx.stack.pop()
@@ -512,6 +515,7 @@ def REVERT(ctx: ExecutionContext) -> None:
 @insn(0xFE)
 def INVALID(ctx: ExecutionContext) -> None:
     ctx.stop(success=False)
+
 
 # TODO: no-op for now
 @insn(0xFF)
@@ -532,11 +536,7 @@ def PUSH(value: int) -> Instruction:
     width = ceil(value.bit_length() / 8) or 1
 
     push_with_no_operand = REGISTRY[0x60 + width - 1]
-    push_with_operand = Instruction(
-        push_with_no_operand.opcode,
-        push_with_no_operand.name,
-        [Operand(width, value)]
-    )
+    push_with_operand = Instruction(push_with_no_operand.opcode, push_with_no_operand.name, [Operand(width, value)])
     return push_with_operand
 
 
@@ -589,7 +589,10 @@ def assemble(instructions: Sequence[Union[Instruction, int, object]], print_bin=
             offset = int(offset_str.strip(), 16)
             if offset != len(result):
                 # print to stderr
-                print(f"Warning: expected to write at offset {offset_str}, but currently at {len(result):04x}", file=sys.stderr)
+                print(
+                    f"Warning: expected to write at offset {offset_str}, but currently at {len(result):04x}",
+                    file=sys.stderr,
+                )
 
             print(f"rest: {rest}")
             tokens = rest.strip().split(" ", 2)

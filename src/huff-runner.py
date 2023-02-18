@@ -40,9 +40,7 @@ def run_huff(huff_file):
     for test_name, test_config in toml.items():
         calldata = test_config["calldata"]
 
-        ret = with_args(
-            Args(code, calldata, verbose=False, print_stack=False, print_memory=False)
-        )
+        ret = with_args(Args(code, calldata, verbose=False, print_stack=False, print_memory=False))
         ret_hex = f"0x{ret.hex()}"
 
         # if any test config has an 'expected-<field>' key, compare the result

@@ -12,10 +12,6 @@ from typing import Sequence, List
 TERMINATING = set((JUMP.opcode, STOP.opcode, REVERT.opcode, RETURN.opcode, INVALID.opcode))
 
 
-def strip_0x(s: str):
-    return s[2:] if s and s.startswith("0x") else s
-
-
 @dataclass
 class DataSection:
     start_pc: int = -1
@@ -77,23 +73,3 @@ def disassemble(code: bytes) -> Sequence[str]:
 
     data_section.flush(output)
     return output
-
-
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--code", help="hex data of the code to run", required=True)
-    args = parser.parse_args()
-
-    # is it a file? if so, load the contents
-    if os.path.exists(args.code):
-        with open(args.code, "r") as f:
-            code = bytes.fromhex(strip_0x(f.read()))
-
-    else:
-        code = bytes.fromhex(strip_0x(args.code))
-
-    print("\n".join(disassemble(code)))
-
-
-if __name__ == "__main__":
-    main()
