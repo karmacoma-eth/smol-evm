@@ -528,6 +528,11 @@ if os.getenv("DEBUG"):
     print(REGISTRY.by_code)
 
 
+@insn(0x5F)
+def PUSH0(ctx: ExecutionContext) -> None:
+    ctx.stack.push(0)
+
+
 def PUSH(value: int) -> Instruction:
     """
     Returns the PUSH instruction for the given value, using the smallest possible PUSH instruction
