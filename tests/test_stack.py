@@ -1,6 +1,6 @@
 from smol_evm.constants import MAX_UINT256
 from smol_evm.context import ExecutionContext
-from smol_evm.opcodes import DUP1, DUP2, POP
+from smol_evm.opcodes import DUP1, DUP2, POP, PUSH0
 from smol_evm.stack import Stack, StackOverflow, StackUnderflow, InvalidStackItem
 
 from shared import with_stack
@@ -98,6 +98,10 @@ def test_peek_underflow(stack):
     with pytest.raises(StackUnderflow):
         stack.peek(1)
 
+def test_push0(context):
+    PUSH0(context)
+    assert context.stack.pop() == 0
+    
 def test_dup1(context):
     DUP1(with_stack(context, [1, 2, 3]))
     assert context.stack.pop() == 3
