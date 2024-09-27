@@ -1,5 +1,7 @@
 # smol-evm
 
+*UPDATE*: I am archiving this repository, I am still working on making the EVM clear and understandable but am now doing so as part of the [a16z/halmos](github.com/a16z/halmos) project. Thanks for the support everyone! 👋
+
 👨‍🔬 An extensible Python implementation of the Ethereum yellow paper from scratch.
 
 Write-up with examples:
